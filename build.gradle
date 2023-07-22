@@ -1,0 +1,39 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.13'
+	id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+}
+
+group = 'com.sparkfire'
+version = '0.0.1-SNAPSHOT'
+//sourceCompatibility = '8'
+
+java {
+	sourceCompatibility = '1.11'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	// https://mvnrepository.com/artifact/com.alibaba/druid
+	implementation group: 'com.alibaba', name: 'druid', version: '1.2.12'
+	// https://mvnrepository.com/artifact/org.springframework/spring-jdbc
+	implementation group: 'org.springframework', name: 'spring-jdbc', version: '5.3.22'
+	// https://mvnrepository.com/artifact/mysql/mysql-connector-java
+	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.28'
+//	implementation 'org.springframework.boot:spring-boot-starter-web'
+//	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//	// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+//	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.13.3'
+//	// https://mvnrepository.com/artifact/com.alibaba.fastjson2/fastjson2
+//	implementation group: 'com.alibaba.fastjson2', name: 'fastjson2', version: '2.0.14'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
