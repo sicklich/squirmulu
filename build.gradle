@@ -26,12 +26,14 @@ dependencies {
 	implementation group: 'org.springframework', name: 'spring-jdbc', version: '5.3.22'
 	// https://mvnrepository.com/artifact/mysql/mysql-connector-java
 	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.28'
+	// https://mvnrepository.com/artifact/io.netty/netty-all
+	implementation group: 'io.netty', name: 'netty-all', version: '4.1.96.Final'
 //	implementation 'org.springframework.boot:spring-boot-starter-web'
 //	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 //	// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-//	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.13.3'
-//	// https://mvnrepository.com/artifact/com.alibaba.fastjson2/fastjson2
-//	implementation group: 'com.alibaba.fastjson2', name: 'fastjson2', version: '2.0.14'
+	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.13.3'
+	// https://mvnrepository.com/artifact/com.alibaba.fastjson2/fastjson2
+	implementation group: 'com.alibaba.fastjson2', name: 'fastjson2', version: '2.0.37'
 }
 
 tasks.named('test') {
