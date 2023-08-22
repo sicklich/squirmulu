@@ -19,12 +19,14 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
+//	implementation 'com.redislabs:jredisjson:0.17.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	// https://mvnrepository.com/artifact/com.alibaba/druid
 	implementation group: 'com.alibaba', name: 'druid', version: '1.2.12'
 	// https://mvnrepository.com/artifact/org.springframework/spring-jdbc
 	implementation group: 'org.springframework', name: 'spring-jdbc', version: '5.3.22'
 	// https://mvnrepository.com/artifact/mysql/mysql-connector-java
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.28'
 	// https://mvnrepository.com/artifact/io.netty/netty-all
 	implementation group: 'io.netty', name: 'netty-all', version: '4.1.96.Final'
