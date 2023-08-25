@@ -1,5 +1,7 @@
 package com.sparkfire.squirmulu.entity;
 
+import java.util.Objects;
+
 public class RoomInfo {
     private long id;
     private int status;
@@ -11,10 +13,11 @@ public class RoomInfo {
     private String body_info;
     private long kp_id;
     private long create_time;
+    private long publish_time;
     protected long edit_time;
 
 
-    public RoomInfo(long id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long edit_time) {
+    public RoomInfo(long id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long publish_time, long edit_time) {
         this.id = id;
         this.status = status;
         this.pl_cur = pl_cur;
@@ -24,11 +27,28 @@ public class RoomInfo {
         this.body_info = body_info;
         this.kp_id = kp_id;
         this.create_time = create_time;
+        this.publish_time = publish_time;
         this.edit_time = edit_time;
+    }
+
+    public long getPublish_time() {
+        return publish_time;
+    }
+
+    public void setPublish_time(long publish_time) {
+        this.publish_time = publish_time;
     }
 
     public int getPublishCycle() {
         return (int) ((System.currentTimeMillis()/1000 - getCreate_time()) / (4*3600));
+    }
+
+    public int getPlShorted() {
+        return pl_max-pl_cur;
+    }
+
+    public int getPwdNeeded() {
+        return Objects.equals(pwd, "") ?0:1;
     }
 
     public int getStatus() {

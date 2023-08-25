@@ -4,10 +4,12 @@ import com.alibaba.fastjson2.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.config.RoomStatus;
 import com.sparkfire.squirmulu.dao.RoomDao;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.RoomInfo;
+import com.sparkfire.squirmulu.entity.response.GameListElement;
 import com.sparkfire.squirmulu.entity.response.RoomListRes;
 import com.sparkfire.squirmulu.entity.response.RoomRes;
 import com.sparkfire.squirmulu.util.JsonUtil;
@@ -16,7 +18,10 @@ import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RoomService {
@@ -31,7 +36,7 @@ public class RoomService {
     public RoomRes createRoom(String body_info, long kp_id) {
         long now = System.currentTimeMillis() / 1000;
         long id = SnowflakeGenerator.nextId();
-        RoomInfo info = new RoomInfo(SnowflakeGenerator.nextId(), 0, 0, 0, "", 0L, body_info, kp_id, now, now);
+        RoomInfo info = new RoomInfo(SnowflakeGenerator.nextId(), 0, 0, 0, "", 0L, body_info, kp_id, now, now, now);
         processBaseInfo(info);
         try {
             redisClient.addObject(RedisClient.room_list, String.valueOf(id), objectMapper.writeValueAsString(info));
@@ -78,8 +83,17 @@ public class RoomService {
         return new RoomRes(String.valueOf(info.getId()));
     }
 
-    public RoomListRes getRoomList() {
-        List<RoomInfo> roomList = redisClient.getAllObjects(RedisClient.room_list,RoomInfo.class);
+    public RoomListRes getRoomList(RoomListCondition condition,int page_cur, int page_size) {
+        //redis 获取 排序
+        try {
+            return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class).stream()
+                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
+                    .sorted(condition.getRoomConditionComparator())
+                    .map(roomInfo -> new GameListElement(roomInfo.getId(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
+                    .limit().collect(Collectors.toList()));
+        } catch (Exception e) {
+            return new RoomListRes(new ArrayList<>());
+        }
 
     }
 }

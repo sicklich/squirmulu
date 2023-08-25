@@ -15,20 +15,26 @@ public class RoomController {
     @Autowired
     RoomService roomService;
 
-    @GetMapping("/new-room")
+    @RequestMapping("/new-room")
     public CommonResponse new_room(@RequestParam(value = "body_info", required = true) String body_info, @RequestParam(value = "kp_id") long kp_id) {
         System.out.println("recv");
         return CommonResponse.success(roomService.createRoom(body_info, kp_id));
     }
 
-    @GetMapping("/update-room")
+    @RequestMapping("/update-room")
     public CommonResponse update_room(@RequestBody IndexBody indexBody) throws JsonProcessingException {
         return CommonResponse.success(roomService.updateRoom(indexBody));
     }
 
-    @GetMapping("/publish-room")
+    @RequestMapping("/publish-room")
     public CommonResponse publish_room(@RequestParam(value = "game_room") String game_room, @RequestParam(value = "game_room") String id) throws JsonProcessingException {
         return CommonResponse.success(roomService.publish(game_room, id));
+    }
+
+    @RequestMapping("/game-list/pull-condition")
+    public CommonResponse pull_condition(@RequestParam(value = "page_cur") int page_cur
+            , @RequestParam(value = "page_size") String page_size, @RequestParam(value = "condition") int condition) throws JsonProcessingException {
+        return CommonResponse.success(roomService.getRoomList(game_room, id));
     }
 
 }

@@ -38,4 +38,15 @@ public class JsonUtil {
         ((ObjectNode) node).put(key, value);
         return JSON.toJSONString(node);
     }
+
+    public static String get(String json,String key) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = null;
+        try {
+            node = mapper.readTree(json);
+        } catch (JsonProcessingException e) {
+            return "";
+        }
+        return node.get(key).asText();
+    }
 }
