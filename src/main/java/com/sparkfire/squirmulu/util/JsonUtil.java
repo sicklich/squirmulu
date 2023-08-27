@@ -14,16 +14,16 @@ public class JsonUtil {
     public static String updateKeyForJsonBody(String json, List<IndexTarget> targets) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree(json);
-        for(IndexTarget target : targets) {
+        for (IndexTarget target : targets) {
             JsonNode tmpNode = node;
             for (int i = 1; i <= target.getLevel(); i++) {
                 if (i == target.getLevel()) {
                     ((ObjectNode) tmpNode).put(target.getTarget(), target.getValue());
                 } else {
-                    String ele = target.getKeys().get(i);
-                    if(tmpNode.isArray()){
+                    String ele = target.getKeys().get(i-1);
+                    if (tmpNode.isArray()) {
                         tmpNode = tmpNode.get(Integer.parseInt(ele));
-                    }else{
+                    } else {
                         tmpNode = tmpNode.get(ele);
                     }
                 }
@@ -32,21 +32,40 @@ public class JsonUtil {
         return JSON.toJSONString(node);
     }
 
-    public static String updateByKey(String json,String key, String value) throws JsonProcessingException {
+    public static String updateByKey(String json, String key, String value) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree(json);
         ((ObjectNode) node).put(key, value);
         return JSON.toJSONString(node);
     }
 
-    public static String get(String json,String key) {
+    public static String getByIndexTarget(String json, IndexTarget target) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = null;
+        JsonNode node = mapper.readTree(json);
+        for (int i = 1; i <= target.getLevel(); i++) {
+            if (i == target.getLevel()) {
+                return node.get(target.getTarget()).asText();
+            } else {
+                String ele = target.getKeys().get(i-1);
+                if (node.isArray()) {
+                    node = node.get(Integer.parseInt(ele));
+                } else {
+                    node = node.get(ele);
+                }
+            }
+        }
+        return "";
+
+    }
+
+    public static String get(String json, String key) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node;
         try {
             node = mapper.readTree(json);
         } catch (JsonProcessingException e) {
             return "";
         }
-        return node.get(key).asText();
+        return node.get(key).toString();
     }
 }

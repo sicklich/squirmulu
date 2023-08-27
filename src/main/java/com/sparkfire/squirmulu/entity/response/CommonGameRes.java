@@ -1,6 +1,6 @@
 package com.sparkfire.squirmulu.entity.response;
 
-public class RoomRes {
+public class CommonGameRes {
     private String id;
 
     public String getId() {
@@ -11,7 +11,7 @@ public class RoomRes {
         this.id = id;
     }
 
-    public RoomRes(String id) {
+    public CommonGameRes(String id) {
         this.id = id;
     }
 }

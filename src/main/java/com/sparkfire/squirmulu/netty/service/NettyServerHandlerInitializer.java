@@ -1,9 +1,14 @@
 package com.sparkfire.squirmulu.netty.service;
 
 
+import com.sparkfire.squirmulu.netty.handler.WebSocketFrameHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,6 +26,8 @@ public class NettyServerHandlerInitializer extends ChannelInitializer<Channel> {
     @Autowired
     private MessageDispatcher messageDispatcher;
     @Autowired
+    private WebSocketFrameHandler webSocketFrameHandler;
+    @Autowired
     private NettyServerHandler nettyServerHandler;
 
     @Override
@@ -29,16 +36,21 @@ public class NettyServerHandlerInitializer extends ChannelInitializer<Channel> {
         ChannelPipeline channelPipeline = ch.pipeline();
         // <2> 添加一堆 NettyServerHandler 到 ChannelPipeline 中
         channelPipeline
-                // 空闲检测
-                .addLast(new ReadTimeoutHandler(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS))
-                // 编码器
-                .addLast(new InvocationEncoder())
-                // 解码器
-                .addLast(new InvocationDecoder())
-                // 消息分发器
-                .addLast(messageDispatcher)
-                // 服务端处理器
-                .addLast(nettyServerHandler)
+        .addLast(new HttpServerCodec())
+        .addLast(new HttpObjectAggregator(64 * 1024))
+        .addLast(new ChunkedWriteHandler())
+        .addLast(new WebSocketServerProtocolHandler("/websocket"))
+        .addLast(webSocketFrameHandler)
+//                // 空闲检测
+//                .addLast(new ReadTimeoutHandler(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+//                // 编码器
+//                .addLast(new InvocationEncoder())
+//                // 解码器
+//                .addLast(new InvocationDecoder())
+//                // 消息分发器
+//                .addLast(messageDispatcher)
+//                // 服务端处理器
+//                .addLast(nettyServerHandler)
         ;
     }
 

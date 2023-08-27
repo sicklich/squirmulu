@@ -1,0 +1,59 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /
+
+spring:
+  main:
+    allow-circular-references: true
+  application:
+    name: mybatis-demo
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 123456
+    timeout: 1000
+
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+
+  typeAliasesPackage: com.ck.mybatis.demo.entity
+  configuration:
+    #是否开启驼峰命名自动映射，即从经典数据库列名 A_COLUMN 映射到经典 Java 属性名 aColumn。 默认是false
+    map-underscore-to-camel-case: true
+    #二级缓存 全剧开关
+    cache-enabled: true
+    call-setters-on-nulls: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    #local-cache-scope: session
+
+
+
+
+logging:
+  level:
+    org.springframework.jdbc.datasource.DataSourceTransactionManager: debug
+    org.springframework.jdbc.support.JdbcTransactionManager: debug
+
+
+#swagger:
+#  basePackage: com.squirmulu.userdemo.controller
+
+
+security:
+  ignore:
+    whites:
+      - /squ/user/user-account/register
+      - /squ/user/user-account/login
+      - /doc**
+      - /doc.html
+      - /webjars*
+      - /webjars/**
+      - /swagger-resources
+      - /swagger-resources/**
+      - /v2/api-docs/**
+      - /swagger-ui/**

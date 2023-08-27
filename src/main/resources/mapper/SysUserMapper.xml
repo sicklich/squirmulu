@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sparkfire.squirmulu.mapper.SysUserMapper">
+  <resultMap id="BaseResultMap" type="com.sparkfire.squirmulu.pojo.SysUser">
+    <result column="id" jdbcType="BIGINT" property="id" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="pwd" jdbcType="VARCHAR" property="pwd" />
+    <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+    <result column="nickname" jdbcType="VARCHAR" property="nickname" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+    <result column="update_time" jdbcType="DATE" property="updateTime" />
+    <result column="last_sign_in_time" jdbcType="DATE" property="lastSignInTime" />
+    <result column="birthday" jdbcType="VARCHAR" property="birthday" />
+    <result column="image" jdbcType="VARCHAR" property="image" />
+    <result column="auth" jdbcType="TINYINT" property="auth" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="ip" jdbcType="BINARY" property="ip" />
+  </resultMap>
+
+
+  <insert id="insert" parameterType="com.sparkfire.squirmulu.pojo.SysUser">
+    insert into sys_user (id, email, pwd, 
+      telephone, nickname, create_time,
+      update_time, last_sign_in_time, birthday, 
+      image, auth, description, 
+      ip)
+    values (#{id,jdbcType=BIGINT}, #{email,jdbcType=VARCHAR}, #{pwd,jdbcType=VARCHAR}, 
+      #{telephone,jdbcType=VARCHAR}, #{nickname,jdbcType=VARCHAR}, #{createTime,jdbcType=BIGINT},
+      #{updateTime,jdbcType=BIGINT}, #{lastSignInTime,jdbcType=BIGINT}, #{birthday,jdbcType=VARCHAR},
+      #{image,jdbcType=VARCHAR}, #{auth,jdbcType=TINYINT}, #{description,jdbcType=VARCHAR}, 
+      #{ip,jdbcType=BINARY})
+  </insert>
+
+  <update id="updateLastSignInTime">
+    update sys_user set last_sign_in_time=now() where  id=#{id}
+  </update>
+
+  <select id="getSysUserInfoByEmail" resultMap="BaseResultMap">
+    select  * from sys_user where  email=#{email}
+  </select>
+
+  <select id="getSysUserInfo" resultType="com.sparkfire.squirmulu.pojo.SysUser">
+    select  * from sys_user where  email=#{email} and pwd=#{pwd}
+  </select>
+
+  <select id="getSysUserInfoById" resultType="com.sparkfire.squirmulu.pojo.SysUser">
+    select  * from sys_user where  id=#{id}
+  </select>
+
+</mapper>

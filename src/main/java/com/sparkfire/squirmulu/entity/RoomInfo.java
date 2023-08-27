@@ -1,5 +1,7 @@
 package com.sparkfire.squirmulu.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.Objects;
 
 public class RoomInfo {
@@ -31,6 +33,9 @@ public class RoomInfo {
         this.edit_time = edit_time;
     }
 
+    public RoomInfo() {
+    }
+
     public long getPublish_time() {
         return publish_time;
     }
@@ -39,15 +44,15 @@ public class RoomInfo {
         this.publish_time = publish_time;
     }
 
-    public int getPublishCycle() {
+    public int publishCycle() {
         return (int) ((System.currentTimeMillis()/1000 - getCreate_time()) / (4*3600));
     }
 
-    public int getPlShorted() {
+    public int plShorted() {
         return pl_max-pl_cur;
     }
 
-    public int getPwdNeeded() {
+    public int pwdNeeded() {
         return Objects.equals(pwd, "") ?0:1;
     }
 
@@ -99,14 +104,6 @@ public class RoomInfo {
         this.g_time = g_time;
     }
 
-    public String getBody_info() {
-        return body_info;
-    }
-
-    public void setBody_info(String body_info) {
-        this.body_info = body_info;
-    }
-
     public long getKp_id() {
         return kp_id;
     }
@@ -129,5 +126,13 @@ public class RoomInfo {
 
     public void setEdit_time(long edit_time) {
         this.edit_time = edit_time;
+    }
+
+    public String getBody_info() {
+        return body_info;
+    }
+
+    public void setBody_info(String body_info) {
+        this.body_info = body_info;
     }
 }

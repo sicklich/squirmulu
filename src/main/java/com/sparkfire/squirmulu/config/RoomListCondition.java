@@ -5,9 +5,9 @@ import com.sparkfire.squirmulu.entity.RoomInfo;
 import java.util.Comparator;
 
 public enum RoomListCondition {
-    DEFAULT("默认",0),
-    SHORTED("缺人",1),
-    FREE("自由",2);
+    DEFAULT("默认", 0),
+    SHORTED("缺人", 1),
+    FREE("自由", 2);
 
     private String statusName;
     private int statusValue;
@@ -17,22 +17,34 @@ public enum RoomListCondition {
         this.statusValue = statusValue;
     }
 
+    public static RoomListCondition getByValue(int value) {
+        for (RoomListCondition e : RoomListCondition.values()) {
+            if (e.getStatusValue() == value) {
+                return e;
+            }
+        }
+        return null;
+    }
+
     public Comparator<RoomInfo> getRoomConditionComparator() throws Exception {
-        switch (statusValue){
+        switch (statusValue) {
             case 0:
-                return Comparator.comparing(RoomInfo::getPublishCycle)
-                        .thenComparing(Comparator.comparing(RoomInfo::getPlShorted))
+                return Comparator.comparing(RoomInfo::publishCycle)
+                        .thenComparing(RoomInfo::plShorted)
                         .thenComparing(RoomInfo::getPublish_time);
             case 1:
-                return Comparator.comparing(RoomInfo::getPublishCycle)
-                        .thenComparing(RoomInfo::getPlShorted)
+                return Comparator.comparing(RoomInfo::publishCycle)
+                        .thenComparing(RoomInfo::plShorted)
                         .thenComparing(RoomInfo::getG_time).reversed();
             case 2:
-                return Comparator.comparing(RoomInfo::getPublishCycle)
-                        .thenComparing(RoomInfo::getPwdNeeded)
+                return Comparator.comparing(RoomInfo::publishCycle)
+                        .thenComparing(RoomInfo::pwdNeeded)
                         .thenComparing(RoomInfo::getG_time);
             default:
                 throw new Exception("no such condition");
+        }
+
+
     }
 
     public String getStatusName() {

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -28,18 +29,20 @@ public class RedisClient {
 
     // 添加对象到Redis的hash中
     public <T> void addObject(String key, String field, T object) {
-        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
         try {
-            hashOperations.put(key, field, objectMapper.writeValueAsString(object));
+            redisTemplate.opsForHash().put(key, field, objectMapper.writeValueAsString(object));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public <T> void deleteObject(String key, String field) {
+        redisTemplate.opsForHash().delete(key, field);
+    }
+
     // 从Redis的hash中获取单个对象
     public <T> T getObjectById(String key, String field, Class<T> clazz) {
-        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-        String objectJson = (String) hashOperations.get(key, field);
+        String objectJson = (String) redisTemplate.opsForHash().get(key, field);
         try {
             return objectMapper.readValue(objectJson, clazz);
         } catch (IOException e) {
