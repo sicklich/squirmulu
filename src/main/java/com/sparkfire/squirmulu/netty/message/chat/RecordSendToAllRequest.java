@@ -6,16 +6,15 @@ import com.sparkfire.squirmulu.netty.message.Message;
 /**
  * 发送给所有人的群聊消息的 Message
  */
-public class ChatSendToAllRequest implements Message {
+public class RecordSendToAllRequest implements Message {
 
-    public static final String TYPE = "CHAT_SEND_TO_ALL_REQUEST";
+    public static final String TYPE = "RECORD_SEND_TO_ALL_REQUEST";
 
     /**
      * 消息编号
      */
-    private long id;
-    private int p_channel;
-    private long p_time;
+    private String id;
+    private long p_channel;
     /**
      * 内容
      */
@@ -27,28 +26,20 @@ public class ChatSendToAllRequest implements Message {
     private int c_type;
 
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getP_channel() {
+    public long getP_channel() {
         return p_channel;
     }
 
-    public void setP_channel(int p_channel) {
+    public void setP_channel(long p_channel) {
         this.p_channel = p_channel;
-    }
-
-    public long getP_time() {
-        return p_time;
-    }
-
-    public void setP_time(long p_time) {
-        this.p_time = p_time;
     }
 
     public String getC_content() {

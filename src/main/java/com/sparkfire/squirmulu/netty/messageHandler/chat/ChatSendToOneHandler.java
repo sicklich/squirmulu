@@ -4,8 +4,9 @@ import com.sparkfire.squirmulu.netty.message.chat.ChatRedirectToUserRequest;
 import com.sparkfire.squirmulu.netty.message.chat.ChatSendResponse;
 import com.sparkfire.squirmulu.netty.message.chat.ChatSendToOneRequest;
 import com.sparkfire.squirmulu.netty.service.Invocation;
-import com.sparkfire.squirmulu.netty.service.MessageHandler;
+import com.sparkfire.squirmulu.netty.handler.MessageHandler;
 import com.sparkfire.squirmulu.netty.service.NettyChannelManager;
+import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import io.netty.channel.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,8 +19,9 @@ public class ChatSendToOneHandler implements MessageHandler<ChatSendToOneRequest
 
     @Override
     public void execute(Channel channel, ChatSendToOneRequest message) {
+        long msgID = SnowflakeGenerator.nextId();
         // 这里，假装直接成功
-        ChatSendResponse sendResponse = new ChatSendResponse().setMsgId(message.getMsgId()).setCode(0);
+        ChatSendResponse sendResponse = new ChatSendResponse().setMsgId(msgID).setCode(0);
         channel.writeAndFlush(new Invocation(ChatSendResponse.TYPE, sendResponse));
 
         // 创建转发的消息，发送给指定用户

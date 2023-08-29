@@ -1,7 +1,7 @@
 package com.sparkfire.squirmulu.netty.message.chat;
 
 
-import com.sparkfire.squirmulu.netty.service.Message;
+import com.sparkfire.squirmulu.netty.message.Message;
 
 /**
  * 发送给指定人的私聊消息 Request
@@ -22,6 +22,15 @@ public class ChatSendToOneRequest implements Message {
      * 内容
      */
     private String content;
+    private int category;
+
+    public int getCategory() {
+        return category;
+    }
+
+    public void setCategory(int category) {
+        this.category = category;
+    }
 
     public String getToUser() {
         return toUser;

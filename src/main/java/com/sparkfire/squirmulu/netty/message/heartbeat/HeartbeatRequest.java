@@ -1,7 +1,7 @@
 package com.sparkfire.squirmulu.netty.message.heartbeat;
 
 
-import com.sparkfire.squirmulu.netty.service.Message;
+import com.sparkfire.squirmulu.netty.message.Message;
 
 /**
  * 消息 - 心跳请求

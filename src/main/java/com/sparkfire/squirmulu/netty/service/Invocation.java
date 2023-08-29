@@ -1,6 +1,7 @@
 package com.sparkfire.squirmulu.netty.service;
 
 import com.alibaba.fastjson2.JSON;
+import com.sparkfire.squirmulu.netty.message.Message;
 
 /**
  * 通信协议的消息体

@@ -1,5 +1,6 @@
-package com.sparkfire.squirmulu.netty.service;
+package com.sparkfire.squirmulu.netty.handler;
 
+import com.sparkfire.squirmulu.netty.service.NettyChannelManager;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

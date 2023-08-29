@@ -1,10 +1,12 @@
 package com.sparkfire.squirmulu.netty.service;
 
+import com.sparkfire.squirmulu.netty.handler.MessageHandler;
+import com.sparkfire.squirmulu.netty.message.Message;
 import io.netty.channel.Channel;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ChatMessageHandler implements MessageHandler{
+public class ChatMessageHandler implements MessageHandler {
     @Override
     public void execute(Channel channel, Message message) {
         System.out.println(message.toString());

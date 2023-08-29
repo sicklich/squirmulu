@@ -1,5 +1,6 @@
-package com.sparkfire.squirmulu.netty.service;
+package com.sparkfire.squirmulu.netty.handler;
 
+import com.sparkfire.squirmulu.netty.message.Message;
 import io.netty.channel.Channel;
 
 public interface MessageHandler<T extends Message> {

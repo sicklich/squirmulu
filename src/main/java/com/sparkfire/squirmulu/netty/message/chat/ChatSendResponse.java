@@ -1,7 +1,7 @@
 package com.sparkfire.squirmulu.netty.message.chat;
 
 
-import com.sparkfire.squirmulu.netty.service.Message;
+import com.sparkfire.squirmulu.netty.message.Message;
 
 /**
  * 聊天发送消息结果的 Response
@@ -13,7 +13,7 @@ public class ChatSendResponse implements Message {
     /**
      * 消息编号
      */
-    private String msgId;
+    private long msgId;
     /**
      * 响应状态码
      */
@@ -23,11 +23,11 @@ public class ChatSendResponse implements Message {
      */
     private String message;
 
-    public String getMsgId() {
+    public long getMsgId() {
         return msgId;
     }
 
-    public ChatSendResponse setMsgId(String msgId) {
+    public ChatSendResponse setMsgId(long msgId) {
         this.msgId = msgId;
         return this;
     }

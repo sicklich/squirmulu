@@ -1,7 +1,7 @@
 package com.sparkfire.squirmulu.netty.message.auth;
 
 
-import com.sparkfire.squirmulu.netty.service.Message;
+import com.sparkfire.squirmulu.netty.message.Message;
 
 /**
  * 用户认证请求

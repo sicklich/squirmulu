@@ -3,7 +3,7 @@ package com.sparkfire.squirmulu.netty.messageHandler.heartbeat;
 import com.sparkfire.squirmulu.netty.message.heartbeat.HeartbeatRequest;
 import com.sparkfire.squirmulu.netty.message.heartbeat.HeartbeatResponse;
 import com.sparkfire.squirmulu.netty.service.Invocation;
-import com.sparkfire.squirmulu.netty.service.MessageHandler;
+import com.sparkfire.squirmulu.netty.handler.MessageHandler;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

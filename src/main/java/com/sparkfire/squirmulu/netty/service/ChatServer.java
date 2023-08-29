@@ -1,5 +1,6 @@
 package com.sparkfire.squirmulu.netty.service;
 
+import com.sparkfire.squirmulu.netty.handler.NettyServerHandlerInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

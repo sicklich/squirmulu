@@ -1,7 +1,7 @@
 package com.sparkfire.squirmulu.netty.message.chat;
 
 
-import com.sparkfire.squirmulu.netty.service.Message;
+import com.sparkfire.squirmulu.netty.message.Message;
 
 /**
  * 转发消息给一个用户的 Message

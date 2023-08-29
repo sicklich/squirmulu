@@ -9,10 +9,7 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,8 +18,12 @@ public class RedisClient {
 
     public static final String room_list = "ROOM_LIST";
 
+    public static final String room_chat_list = "ROOM_CHAT_LIST_";
+
+    public static final String room_record_list = "ROOM_RECORD_LIST_";
+
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -52,12 +53,12 @@ public class RedisClient {
 
     // 获取整个对象列表
     public <T> List<T> getAllObjects(String key, Class<T> clazz) {
-        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-        Map<Object, Object> objectMap = hashOperations.entries(key);
+        HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
+        Map<String, String> objectMap = hashOperations.entries(key);
         return objectMap.values().stream()
                 .map(value -> {
                     try {
-                        return objectMapper.readValue((String) value, clazz);
+                        return objectMapper.readValue(value, clazz);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -69,8 +70,8 @@ public class RedisClient {
 
 // 获取zset中的所有元素，并将其转换为特定类型的对象
     public <T> List<T> getAllElements(String key, Class<T> clazz) {
-        ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
-        Set<Object> elements = zSetOperations.range(key, 0, -1);
+        ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+        Set<String> elements = zSetOperations.range(key, 0, -1);
         if(null == elements) return new ArrayList<>();
 
         // 将JSON字符串转换为特定类型的对象
@@ -78,7 +79,7 @@ public class RedisClient {
             return elements.stream()
                     .map(element -> {
                         try {
-                            return objectMapper.readValue(element.toString(), clazz);
+                            return objectMapper.readValue(element, clazz);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -93,7 +94,7 @@ public class RedisClient {
         }
     }
 
-    public void set(String key, Object value) {
+    public void set(String key, String value) {
         redisTemplate.opsForValue().set(key, value);
     }
 
@@ -106,40 +107,79 @@ public class RedisClient {
         redisTemplate.delete(key);
     }
 
-    // 添加其他基本操作，如列表、集合、哈希等
-    // 添加元素到zset
-    public void ZAdd(String key, Object value, long score) {
-        ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
-        zSetOperations.add(key, value, (double)score);
+    public <T> Boolean add(String key, T value, double score, Class<T> clazz) {
+        try {
+            String jsonValue = objectMapper.writeValueAsString(value);
+            return redisTemplate.opsForZSet().add(key, jsonValue, score);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error serializing value to JSON", e);
+        }
     }
 
-    // 从zset中移除元素
-    public void ZRemove(String key, Object value) {
-        ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
-        zSetOperations.remove(key, value);
+    public <T> Long remove(String key, T value, Class<T> clazz) {
+        try {
+            String jsonValue = objectMapper.writeValueAsString(value);
+            return redisTemplate.opsForZSet().remove(key, jsonValue);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error serializing value to JSON", e);
+        }
     }
 
-    // 根据分数范围查询zset中的元素
-    public Set<Object> ZRangeByScore(String key, double minScore, double maxScore) {
-        ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
-        return zSetOperations.rangeByScore(key, minScore, maxScore);
+    public <T> Set<T> range(String key, long start, long end, Class<T> clazz) {
+        ZSetOperations<String, String> zSetOp = redisTemplate.opsForZSet();
+        Set<String> jsonStringSet = redisTemplate.opsForZSet().range(key, start, end);
+        return deserializeJsonSet(jsonStringSet, clazz);
     }
 
-    // 获取zset中元素的分数
-    public Double getScore(String key, Object value) {
-        ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
-        return zSetOperations.score(key, value);
+    public <T> Set<T> rangeByScore(String key, double minScore, double maxScore, Class<T> clazz) {
+        Set<String> jsonStringSet = redisTemplate.opsForZSet().rangeByScore(key, minScore, maxScore);
+        return deserializeJsonSet(jsonStringSet, clazz);
     }
 
-    // 获取zset中的元素数量
-    public Long getZSetSize(String key) {
-        ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
-        return zSetOperations.size(key);
+    private <T> Set<T> deserializeJsonSet(Set<String> jsonStringSet, Class<T> clazz) {
+        Set<T> resultSet = new HashSet<>();
+        for (String jsonString : jsonStringSet) {
+            try {
+                T value = objectMapper.readValue(jsonString, clazz);
+                resultSet.add(value);
+            } catch (IOException e) {
+                throw new RuntimeException("Error deserializing JSON", e);
+            }
+        }
+        return resultSet;
     }
 
-    // 根据索引范围查询zset中的元素
-    public Set<Object> ZRange(String key, long start, long end) {
-        ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
-        return zSetOperations.range(key, start, end);
+    public <T> Set<String> rangeByScore(String key, double minScore, double maxScore) {
+        return redisTemplate.opsForZSet().rangeByScore(key, minScore, maxScore);
+    }
+
+    public <T> Set<ZSetOperations.TypedTuple<String>> rangeByScoreWithScores(String key, double minScore, double maxScore) {
+        return redisTemplate.opsForZSet().rangeByScoreWithScores(key, minScore, maxScore);
+    }
+
+    public <T> Long rank(String key, T value, Class<T> clazz) {
+        try {
+            String jsonValue = objectMapper.writeValueAsString(value);
+            return redisTemplate.opsForZSet().rank(key, jsonValue);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error serializing value to JSON", e);
+        }
+    }
+
+    public <T> Double score(String key, T value, Class<T> clazz) {
+        try {
+            String jsonValue = objectMapper.writeValueAsString(value);
+            return redisTemplate.opsForZSet().score(key, jsonValue);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error serializing value to JSON", e);
+        }
+    }
+
+    public <T> T deserializeJson(String jsonString, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(jsonString, clazz);
+        } catch (IOException e) {
+            throw new RuntimeException("Error deserializing JSON", e);
+        }
     }
 }

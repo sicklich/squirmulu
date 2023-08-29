@@ -1,7 +1,6 @@
-package com.sparkfire.squirmulu.netty.service;
+package com.sparkfire.squirmulu.netty.handler;
 
 
-import com.sparkfire.squirmulu.netty.handler.WebSocketFrameHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -9,11 +8,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
-import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class NettyServerHandlerInitializer extends ChannelInitializer<Channel> {
@@ -49,8 +45,8 @@ public class NettyServerHandlerInitializer extends ChannelInitializer<Channel> {
 //                .addLast(new InvocationDecoder())
 //                // 消息分发器
 //                .addLast(messageDispatcher)
-//                // 服务端处理器
-//                .addLast(nettyServerHandler)
+                // 服务端处理器
+                .addLast(nettyServerHandler)
         ;
     }
 

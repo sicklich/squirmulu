@@ -1,5 +1,7 @@
-package com.sparkfire.squirmulu.netty.service;
+package com.sparkfire.squirmulu.netty.handler;
 
+import com.sparkfire.squirmulu.netty.handler.MessageHandler;
+import com.sparkfire.squirmulu.netty.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopProxyUtils;
