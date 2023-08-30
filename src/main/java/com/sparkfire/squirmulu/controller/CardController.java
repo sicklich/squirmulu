@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/squ/game")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = {"http://localhost:8081","http://localhost:5173"})
 public class CardController {
     @Autowired
     CardService cardService;

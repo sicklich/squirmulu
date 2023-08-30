@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/squ/game")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = {"http://localhost:8081","http://localhost:5173"})
 public class RoomController {
     @Autowired
     RoomService roomService;

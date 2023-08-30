@@ -14,7 +14,7 @@ import java.util.Map;
 @Api(tags = "用户信息")
 @RestController
 @RequestMapping("/squ/user/")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class UserController {
     @Autowired
     private SysUserService sysUserService;
