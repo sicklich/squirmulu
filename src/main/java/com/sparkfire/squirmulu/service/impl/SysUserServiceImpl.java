@@ -79,6 +79,7 @@ public class SysUserServiceImpl implements SysUserService
         loginUser.setLoginName(user.getEmail());
 
         Map<String, Object> token = tokenService.createToken(loginUser);
+        token.put("id",user.getId());
 
         sysUserMapper.updateLastSignInTime(user.getId());
 
