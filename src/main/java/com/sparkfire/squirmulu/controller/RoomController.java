@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.RoomInfo;
+import com.sparkfire.squirmulu.entity.request.RoomListReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +51,8 @@ public class RoomController {
     }
 
     @RequestMapping("/game-list/pull-condition")
-    public CommonResponse pull_condition(@RequestParam(value = "page_cur") int page_cur
-            , @RequestParam(value = "page_size") int page_size, @RequestParam(value = "condition") int condition) throws JsonProcessingException {
-        return CommonResponse.success(roomService.getRoomList(RoomListCondition.getByValue(condition),page_cur,page_size));
+    public CommonResponse pull_condition(@RequestBody RoomListReq req) {
+        return CommonResponse.success(roomService.getRoomList(RoomListCondition.getByValue(req.getCondition()),req.getPage_cur(),req.getPage_size()));
     }
 
 }
