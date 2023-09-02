@@ -4,6 +4,8 @@ import com.alibaba.fastjson2.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparkfire.squirmulu.netty.message.Message;
 import com.sparkfire.squirmulu.netty.service.Invocation;
+import com.sparkfire.squirmulu.netty.service.NettyChannelManager;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -15,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
+@ChannelHandler.Sharable
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
     @Autowired
@@ -22,6 +25,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     @Autowired
     private MessageHandlerContainer messageHandlerContainer;
+
+    @Autowired
+    private NettyChannelManager channelManager;
 
     private final ExecutorService executor =  Executors.newFixedThreadPool(200);
 

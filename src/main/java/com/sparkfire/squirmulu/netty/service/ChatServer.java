@@ -25,6 +25,8 @@ public class ChatServer {
 
     @Value("${netty.port}")
     private Integer port;
+    @Value("${netty.timeout}")
+    private Integer timeout;
 
     @Autowired
     private NettyServerHandlerInitializer nettyServerHandlerInitializer;

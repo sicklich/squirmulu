@@ -107,7 +107,7 @@ public class RedisClient {
         redisTemplate.delete(key);
     }
 
-    public <T> Boolean add(String key, T value, double score, Class<T> clazz) {
+    public <T> Boolean zAdd(String key, T value, double score, Class<T> clazz) {
         try {
             String jsonValue = objectMapper.writeValueAsString(value);
             return redisTemplate.opsForZSet().add(key, jsonValue, score);
@@ -116,7 +116,7 @@ public class RedisClient {
         }
     }
 
-    public <T> Long remove(String key, T value, Class<T> clazz) {
+    public <T> Long zRemove(String key, T value, Class<T> clazz) {
         try {
             String jsonValue = objectMapper.writeValueAsString(value);
             return redisTemplate.opsForZSet().remove(key, jsonValue);
@@ -125,13 +125,13 @@ public class RedisClient {
         }
     }
 
-    public <T> Set<T> range(String key, long start, long end, Class<T> clazz) {
+    public <T> Set<T> zRange(String key, long start, long end, Class<T> clazz) {
         ZSetOperations<String, String> zSetOp = redisTemplate.opsForZSet();
         Set<String> jsonStringSet = redisTemplate.opsForZSet().range(key, start, end);
         return deserializeJsonSet(jsonStringSet, clazz);
     }
 
-    public <T> Set<T> rangeByScore(String key, double minScore, double maxScore, Class<T> clazz) {
+    public <T> Set<T> zRangeByScore(String key, double minScore, double maxScore, Class<T> clazz) {
         Set<String> jsonStringSet = redisTemplate.opsForZSet().rangeByScore(key, minScore, maxScore);
         return deserializeJsonSet(jsonStringSet, clazz);
     }
@@ -149,7 +149,7 @@ public class RedisClient {
         return resultSet;
     }
 
-    public <T> Set<String> rangeByScore(String key, double minScore, double maxScore) {
+    public <T> Set<String> zRangeByScore(String key, double minScore, double maxScore) {
         return redisTemplate.opsForZSet().rangeByScore(key, minScore, maxScore);
     }
 

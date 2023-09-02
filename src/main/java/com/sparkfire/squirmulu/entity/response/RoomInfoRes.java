@@ -5,11 +5,21 @@ import java.util.List;
 public class RoomInfoRes {
 
     private long id;
+    private String auth_role;
     List<GameInfoElement> infoElements;
 
-    public RoomInfoRes(long id, List<GameInfoElement> infoElements) {
+    public RoomInfoRes(long id, String auth_role, List<GameInfoElement> infoElements) {
         this.id = id;
+        this.auth_role = auth_role;
         this.infoElements = infoElements;
+    }
+
+    public String getAuth_role() {
+        return auth_role;
+    }
+
+    public void setAuth_role(String auth_role) {
+        this.auth_role = auth_role;
     }
 
     public long getId() {

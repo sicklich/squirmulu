@@ -6,9 +6,9 @@ import com.sparkfire.squirmulu.netty.message.Message;
 /**
  * 发送给所有人的群聊消息的 Message
  */
-public class ChatSendToAllRequest implements Message {
+public class ChatSendToAll implements Message {
 
-    public static final String TYPE = "CHAT_SEND_TO_ALL_REQUEST";
+    public static final String TYPE = "CHAT_SEND_TO_ALL";
 
     /**
      * 消息编号
@@ -25,6 +25,8 @@ public class ChatSendToAllRequest implements Message {
     private long room_id;
     private long user_id;
     private int c_type;
+
+    private int chat_type;
 
 
     public long getId() {
@@ -97,5 +99,13 @@ public class ChatSendToAllRequest implements Message {
 
     public void setC_type(int c_type) {
         this.c_type = c_type;
+    }
+
+    public int getChat_type() {
+        return chat_type;
+    }
+
+    public void setChat_type(int chat_type) {
+        this.chat_type = chat_type;
     }
 }

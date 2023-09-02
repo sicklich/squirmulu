@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.RoomInfo;
+import com.sparkfire.squirmulu.entity.request.ChatListReq;
 import com.sparkfire.squirmulu.entity.request.RoomListReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.service.RoomService;
@@ -43,6 +44,11 @@ public class RoomController {
     @RequestMapping("/game-into/pull-into")
     public CommonResponse pull_info(@RequestBody IndexBody indexBody) throws JsonProcessingException {
         return CommonResponse.success(roomService.getRoomInfo(indexBody));
+    }
+
+    @RequestMapping("/game-into/chat-list")
+    public CommonResponse pull_info(@RequestBody ChatListReq req) throws JsonProcessingException {
+        return CommonResponse.success(roomService.getChatList(req));
     }
 
     @RequestMapping("/game-deal/publish-room")

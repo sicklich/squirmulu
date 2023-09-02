@@ -3,25 +3,24 @@ package com.sparkfire.squirmulu.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.config.RoomStatus;
 import com.sparkfire.squirmulu.dao.RoomDao;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.IndexTarget;
 import com.sparkfire.squirmulu.entity.RoomInfo;
-import com.sparkfire.squirmulu.entity.RoomInfoWrapper;
+import com.sparkfire.squirmulu.entity.request.ChatListReq;
 import com.sparkfire.squirmulu.entity.response.*;
+import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAll;
+import com.sparkfire.squirmulu.netty.messageHandler.chat.ChatSendToAllHandler;
 import com.sparkfire.squirmulu.util.JsonUtil;
 import com.sparkfire.squirmulu.util.RedisClient;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.annotation.Target;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,18 +79,54 @@ public class RoomService {
         String key = RedisClient.room_list;
         RoomInfo info = redisClient.getObjectById(key, String.valueOf(body.getId()), RoomInfo.class);
         List<GameInfoElement> elements = new ArrayList<>();
+        if (body.getTargets().isEmpty()) {
+            elements.add(new GameInfoElement("game_room", info.getBody_info()));
+            return new RoomInfoRes(body.getId(), getAuthRole(info.getBody_info(), body.getUser_id()), elements);
+        }
         for (IndexTarget target : body.getTargets()) {
             String gameInfo = JsonUtil.getByIndexTarget(info.getBody_info(), target);
             elements.add(new GameInfoElement(target.getTarget(), gameInfo));
         }
-        return new RoomInfoRes(body.getId(), elements);
+        return new RoomInfoRes(body.getId(), getAuthRole(info.getBody_info(), body.getUser_id()), elements);
+    }
+
+    public List<ChatSendToAll> getChatList(ChatListReq req) {
+        String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ?
+                RedisClient.room_chat_list : RedisClient.room_record_list) + req.getRoom_id();
+        long start = (long) (req.getPage_cur() - 1) * req.getPage_size();
+        long end = start + req.getPage_size() - 1;
+        return redisClient.zRange(key, start, end, ChatSendToAll.class).stream()
+                .sorted(Comparator.comparing(ChatSendToAll::getP_time).reversed()).collect(Collectors.toList());
+
+    }
+
+    private String getAuthRole(String body, long userID) {
+        try {
+            JsonNode json = objectMapper.readTree(body);
+            if (json.get("kp_id").asLong() == userID) return "ADMIN";
+            if (containsID(userID, (ArrayNode) json.get("g_gamers").get("g_keepers"))) return "KP";
+            if (containsID(userID, (ArrayNode) json.get("g_gamers").get("g_players"))) return "PL";
+            if (containsID(userID, (ArrayNode) json.get("g_gamers").get("g_audiences"))) return "PL";
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return "";
+    }
+
+    private boolean containsID(long userID, ArrayNode node) {
+        Iterator<JsonNode> iterator = node.elements();
+        while (iterator.hasNext()) {
+            JsonNode element = iterator.next();
+            if (element.get("id").asLong() == userID) return true;
+        }
+        return false;
     }
 
     public CommonGameRes publish(RoomInfo roomInfo) throws JsonProcessingException {
         String key = RedisClient.room_list;
         roomInfo.setStatus(RoomStatus.RECRUITING.getStatusValue());
-        String edited = JsonUtil.updateKeyForJsonBody(roomInfo.getBody_info(),List.of(new IndexTarget("r_state",2
-                , List.of("r_info"),String.valueOf(RoomStatus.RECRUITING.getStatusValue()))));
+        String edited = JsonUtil.updateKeyForJsonBody(roomInfo.getBody_info(), List.of(new IndexTarget("r_state", 2
+                , List.of("r_info"), String.valueOf(RoomStatus.RECRUITING.getStatusValue()))));
         roomInfo.setBody_info(edited);
         redisClient.addObject(key, String.valueOf(roomInfo.getId()), roomInfo);
         return new CommonGameRes(String.valueOf(roomInfo.getId()));

@@ -4,11 +4,22 @@ import java.util.List;
 
 public class IndexBody {
     private long id;
+
+    private long user_id;
     private List<IndexTarget> targets;
 
-    public IndexBody(long id, List<IndexTarget> targets) {
+    public IndexBody(long id, long user_id, List<IndexTarget> targets) {
         this.id = id;
+        this.user_id = user_id;
         this.targets = targets;
+    }
+
+    public long getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(long user_id) {
+        this.user_id = user_id;
     }
 
     public long getId() {
