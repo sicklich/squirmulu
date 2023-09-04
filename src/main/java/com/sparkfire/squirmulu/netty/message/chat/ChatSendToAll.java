@@ -24,7 +24,7 @@ public class ChatSendToAll implements Message {
     private String a_img;
     private long room_id;
     private long user_id;
-    private int c_type;
+    private String c_type;
 
     private int chat_type;
 
@@ -93,11 +93,11 @@ public class ChatSendToAll implements Message {
         this.user_id = user_id;
     }
 
-    public int getC_type() {
+    public String getC_type() {
         return c_type;
     }
 
-    public void setC_type(int c_type) {
+    public void setC_type(String c_type) {
         this.c_type = c_type;
     }
 

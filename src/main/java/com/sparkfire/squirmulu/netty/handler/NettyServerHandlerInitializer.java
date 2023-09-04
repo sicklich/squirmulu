@@ -4,8 +4,12 @@ package com.sparkfire.squirmulu.netty.handler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.cors.CorsConfig;
+import io.netty.handler.codec.http.cors.CorsConfigBuilder;
+import io.netty.handler.codec.http.cors.CorsHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +32,22 @@ public class NettyServerHandlerInitializer extends ChannelInitializer<Channel> {
 
     @Override
     protected void initChannel(Channel ch) {
+        // 添加 CorsHandler
+        CorsConfig corsConfig = CorsConfigBuilder.forAnyOrigin()
+//                .allowedRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.OPTIONS)
+                .allowedRequestHeaders("content-type", "origin", "accept", "authorization")
+                .allowNullOrigin()
+                .build();
         // <1> 获得 Channel 对应的 ChannelPipeline
         ChannelPipeline channelPipeline = ch.pipeline();
         // <2> 添加一堆 NettyServerHandler 到 ChannelPipeline 中
         channelPipeline
-        .addLast(new HttpServerCodec())
-        .addLast(new HttpObjectAggregator(64 * 1024))
-        .addLast(new ChunkedWriteHandler())
-        .addLast(new WebSocketServerProtocolHandler("/websocket"))
-        .addLast(webSocketFrameHandler)
+                .addLast(new HttpServerCodec())
+                .addLast(new HttpObjectAggregator(64 * 1024))
+                .addLast(new ChunkedWriteHandler())
+//                .addLast("cors", new CorsHandler(corsConfig))
+                .addLast(new WebSocketServerProtocolHandler("/websocket"))
+                .addLast(webSocketFrameHandler)
 //                // 空闲检测
 //                .addLast(new ReadTimeoutHandler(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS))
 //                // 编码器

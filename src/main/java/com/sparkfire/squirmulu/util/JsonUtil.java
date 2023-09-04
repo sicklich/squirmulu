@@ -11,16 +11,31 @@ import com.sparkfire.squirmulu.entity.IndexTarget;
 import java.util.List;
 
 public class JsonUtil {
-    public static String updateKeyForJsonBody(String json, List<IndexTarget> targets) throws JsonProcessingException {
+    public static String updateKeyForJsonBody(String json, List<IndexTarget> targets) {
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = mapper.readTree(json);
+        JsonNode node = null;
+        try {
+            node = mapper.readTree(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         for (IndexTarget target : targets) {
+            JsonNode jsonObject;
+            try {
+                jsonObject = mapper.readTree(target.getValue());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
             JsonNode tmpNode = node;
             for (int i = 1; i <= target.getLevel(); i++) {
                 if (i == target.getLevel()) {
-                    ((ObjectNode) tmpNode).put(target.getTarget(), target.getValue());
+                    if (jsonObject != null) {
+                        ((ObjectNode) tmpNode).set(target.getTarget(), jsonObject);
+                    } else {
+                        ((ObjectNode) tmpNode).put(target.getTarget(), target.getValue());
+                    }
                 } else {
-                    String ele = target.getKeys().get(i-1);
+                    String ele = target.getKeys().get(i - 1);
                     if (tmpNode.isArray()) {
                         tmpNode = tmpNode.get(Integer.parseInt(ele));
                     } else {
@@ -46,7 +61,7 @@ public class JsonUtil {
             if (i == target.getLevel()) {
                 return node.get(target.getTarget()).asText();
             } else {
-                String ele = target.getKeys().get(i-1);
+                String ele = target.getKeys().get(i - 1);
                 if (node.isArray()) {
                     node = node.get(Integer.parseInt(ele));
                 } else {
