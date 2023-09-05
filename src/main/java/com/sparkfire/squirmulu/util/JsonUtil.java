@@ -59,7 +59,7 @@ public class JsonUtil {
         JsonNode node = mapper.readTree(json);
         for (int i = 1; i <= target.getLevel(); i++) {
             if (i == target.getLevel()) {
-                return node.get(target.getTarget()).asText();
+                return node.get(target.getTarget()).toString();
             } else {
                 String ele = target.getKeys().get(i - 1);
                 if (node.isArray()) {
