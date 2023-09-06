@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.config.RoomStatus;
 import com.sparkfire.squirmulu.dao.RoomDao;
@@ -27,11 +28,134 @@ import java.util.stream.Collectors;
 public class RoomService {
     @Autowired
     RoomDao roomDao;
+
     @Autowired
     RedisClient redisClient;
 
     @Autowired
     ObjectMapper objectMapper;
+
+    private static final String body_info = "{" +
+            "  \"id\": \"\"," +
+            "  \"kp_id\": \"\"," +
+            "  \"r_info\": {" +
+            "    \"r_img\": \"\"," +
+            "    \"r_name\": \"\"," +
+            "    \"kp_name\": \"\"," +
+            "    \"c_time\": \"\"," +
+            "    \"g_time\": \"\"," +
+            "    \"pl_cur\": 0," +
+            "    \"pl_max\": 4," +
+            "    \"r_state\": 0," +
+            "    \"r_tags\": [" +
+            "      \"COC7th\"" +
+            "    ]," +
+            "    \"r_des\": \"\"" +
+            "  }," +
+            "  \"g_setting\": {" +
+            "    \"g_type\": \"COC\"," +
+            "    \"g_creator\": \"\"," +
+            "    \"g_mods\": \"\"," +
+            "    \"p_time\": \"\"," +
+            "    \"c_price\": 0" +
+            "  }," +
+            "  \"r_setting\": {" +
+            "    \"r_rule\": {" +
+            "      \"r_acc\": {" +
+            "        \"account\": \"\"," +
+            "        \"password\": \"\"," +
+            "        \"approve_required\": true" +
+            "      }," +
+            "      \"r_card\": {" +
+            "        \"self_modi\": false," +
+            "        \"cross_check\": false" +
+            "      }," +
+            "      \"r_check\": {" +
+            "        \"succ\": 5," +
+            "        \"fail\": 96," +
+            "        \"strict_required\": true" +
+            "      }," +
+            "      \"r_result\": {" +
+            "        \"self_roll\": true," +
+            "        \"edit_forbidden\": false" +
+            "      }," +
+            "      \"r_more\": {" +
+            "        \"statement\": \"\"" +
+            "      }" +
+            "    }" +
+            "  }," +
+            "  \"r_npc\": {" +
+            "    \"npc_list\": [" +
+            "      {" +
+            "        \"npc_setting\": {" +
+            "          \"creator\": \"\"," +
+            "          \"npc_mods\": \"\"," +
+            "          \"p_time\": \"\"," +
+            "          \"c_price\": 0" +
+            "        }," +
+            "        \"npc_info\": {" +
+            "          \"name\": \"\"," +
+            "          \"img\": \"\"," +
+            "          \"type\": \"\"," +
+            "          \"intro\": \"\"" +
+            "        }," +
+            "        \"npc_state\": {" +
+            "          \"hp_cur\": 0," +
+            "          \"mp_cur\": 0," +
+            "          \"damage\": \"\"" +
+            "        }," +
+            "        \"npc_att\": {" +
+            "          \"str\": 0," +
+            "          \"con\": 0," +
+            "          \"siz\": 0," +
+            "          \"dex\": 0," +
+            "          \"app\": 0," +
+            "          \"int\": 0," +
+            "          \"pow\": 0," +
+            "          \"edu\": 0," +
+            "          \"luc\": 0" +
+            "        }," +
+            "        \"npc_extra\": {" +
+            "          \"att\": [" +
+            "            {" +
+            "              \"name\": \"\"," +
+            "              \"value\": 0" +
+            "            }" +
+            "          ]," +
+            "          \"details\": \"\"" +
+            "        }" +
+            "      }" +
+            "    ]" +
+            "  }," +
+            "  \"r_expo\": {" +
+            "    \"expo_map\": {" +
+            "      \"img\": \"\"," +
+            "      \"intro\": \"\"" +
+            "    }," +
+            "    \"expo_scene_cur\": 0," +
+            "    \"expo_scene\": []" +
+            "  }," +
+            "  \"g_gamers\": {" +
+            "    \"g_keepers\": []," +
+            "    \"g_players\": []," +
+            "    \"g_audiences\": []" +
+            "  }," +
+            "  \"g_record\": {" +
+            "    \"record_list\": []" +
+            "  }," +
+            "  \"g_chat\": {" +
+            "    \"record_list\": []" +
+            "  }," +
+            "  \"g_clue\": {" +
+            "    \"clue_list\": [" +
+            "      {" +
+            "        \"c_a_name\": \"\"," +
+            "        \"c_content\": \"\"," +
+            "        \"vis_status\": false" +
+            "      }" +
+            "    ]" +
+            "  }" +
+            "}";
 
     public CommonGameRes createRoom(RoomInfo info) {
         long now = System.currentTimeMillis() / 1000;
@@ -39,7 +163,8 @@ public class RoomService {
         info.setId(id);
         info.setCreate_time(now);
         info.setEdit_time(now);
-//        processBaseInfo(info);
+        info.setBody_info(body_info);
+        processBaseInfo(info);
         redisClient.addObject(RedisClient.room_list, String.valueOf(id), info);
         return new CommonGameRes(String.valueOf(id));
 //        roomDao.insert(info);
@@ -59,9 +184,12 @@ public class RoomService {
             return;
         }
         info.setG_time(node.get("r_info").get("g_time").asLong());
+        ((ObjectNode)node).put("id",String.valueOf(info.getId()));
         info.setPwd(node.get("r_setting").get("r_rule").get("r_acc").get("password").asText());
+        ((ObjectNode)node.get("r_setting").get("r_rule").get("r_acc")).put("account",String.valueOf(info.getId()));
         info.setPl_cur(node.get("r_info").get("pl_cur").asInt());
         info.setPl_cur(node.get("r_info").get("pl_max").asInt());
+        info.setBody_info(node.toString());
     }
 
     public CommonGameRes updateRoom(IndexBody body) throws JsonProcessingException {
