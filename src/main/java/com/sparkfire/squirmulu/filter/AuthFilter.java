@@ -19,9 +19,12 @@ import org.springframework.stereotype.Component;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 业务异常
@@ -51,6 +54,18 @@ public class AuthFilter implements Filter, Ordered {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+
+        String requestUrl = httpServletRequest.getRequestURL().toString();
+        System.out.println("Request URL: " + requestUrl);
+
+        // 获取请求体
+//        StringBuilder requestBody = new StringBuilder();
+//        try (BufferedReader reader = new BufferedReader(new InputStreamReader(httpServletRequest.getInputStream()))) {
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//                requestBody.append(line);
+//            }
+//        }
 
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
