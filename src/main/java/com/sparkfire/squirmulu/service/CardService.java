@@ -3,25 +3,22 @@ package com.sparkfire.squirmulu.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparkfire.squirmulu.config.RoomListCondition;
-import com.sparkfire.squirmulu.config.RoomStatus;
 import com.sparkfire.squirmulu.dao.CardDao;
 import com.sparkfire.squirmulu.dao.NpcCardDao;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.NpcCard;
 import com.sparkfire.squirmulu.entity.PlayerCard;
-import com.sparkfire.squirmulu.entity.RoomInfo;
-import com.sparkfire.squirmulu.entity.response.GameListElement;
-import com.sparkfire.squirmulu.entity.response.RoomListRes;
+import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
+import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.entity.response.CommonGameRes;
+import com.sparkfire.squirmulu.exception.ServiceException;
 import com.sparkfire.squirmulu.util.JsonUtil;
 import com.sparkfire.squirmulu.util.RedisClient;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,9 +76,28 @@ public class CardService {
 
     public CommonGameRes updatePlayerCard(IndexBody body) throws JsonProcessingException {
         PlayerCard card = cardDao.get(body.getId());
-        String edited = JsonUtil.updateKeyForJsonBody(card.getBody_info(), body.getTargets());
-        card.setBody_info(edited);
+        String edited = JsonUtil.updateKeyForJsonBody(card.getRole_card(), body.getTargets());
+        card.setRole_card(edited);
         cardDao.update(card);
         return new CommonGameRes(String.valueOf(body.getId()));
+    }
+
+    public CommonResponse myCardList(MyPlayerCardListReq req){
+        if(!req.getType().equals("player")){
+            throw new ServiceException("不支持的查询类型");
+        }
+        List<PlayerCard> lists = cardDao.getAll();
+        List<PlayerCard> list = lists.stream().filter(card -> {
+            String bodyinfo = card.getRole_card();
+            try {
+                JsonNode node = objectMapper.readTree(bodyinfo);
+                return node.get("a_setting").get("card_user").asLong() == req.getId();
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }).skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
+
+        return CommonResponse.success(list);
+
     }
 }

@@ -10,9 +10,13 @@ import com.sparkfire.squirmulu.config.RoomStatus;
 import com.sparkfire.squirmulu.dao.RoomDao;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.IndexTarget;
+import com.sparkfire.squirmulu.entity.PlayerCard;
 import com.sparkfire.squirmulu.entity.RoomInfo;
 import com.sparkfire.squirmulu.entity.request.ChatListReq;
+import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
+import com.sparkfire.squirmulu.entity.request.MyRoomListReq;
 import com.sparkfire.squirmulu.entity.response.*;
+import com.sparkfire.squirmulu.exception.ServiceException;
 import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAll;
 import com.sparkfire.squirmulu.netty.messageHandler.chat.ChatSendToAllHandler;
 import com.sparkfire.squirmulu.util.JsonUtil;
@@ -184,9 +188,13 @@ public class RoomService {
             return;
         }
         info.setG_time(node.get("r_info").get("g_time").asLong());
-        ((ObjectNode)node).put("id",String.valueOf(info.getId()));
+        ((ObjectNode) node).put("id", String.valueOf(info.getId()));
         info.setPwd(node.get("r_setting").get("r_rule").get("r_acc").get("password").asText());
-        ((ObjectNode)node.get("r_setting").get("r_rule").get("r_acc")).put("account",String.valueOf(info.getId()));
+        ((ObjectNode) node.get("r_setting").get("r_rule").get("r_acc")).put("account", String.valueOf(info.getId()));
+        ArrayNode arrayNode = (ArrayNode) node.get("g_gamers").get("g_keepers");
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("id", info.getKp_id());
+        arrayNode.add(objectNode);
         info.setPl_cur(node.get("r_info").get("pl_cur").asInt());
         info.setPl_cur(node.get("r_info").get("pl_max").asInt());
         info.setBody_info(node.toString());
@@ -278,5 +286,48 @@ public class RoomService {
             return new RoomListRes(new ArrayList<>());
         }
 
+    }
+
+    public CommonResponse myRoomList(MyRoomListReq req) {
+        String key = "";
+        switch (req.getType()) {
+            case "created":
+                key = "g_keepers";
+                break;
+            case "join":
+                key = "g_players";
+                break;
+            case "onlook":
+                key = "g_audiences";
+                break;
+            default:
+                throw new ServiceException("不支持的查询类型");
+        }
+        String finalKey = key;
+        List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class));
+        list.stream().filter(room -> roomForSomeone(room.getBody_info(), req.getId(), finalKey))
+                .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
+
+        return CommonResponse.success(list);
+
+    }
+
+    boolean roomForSomeone(String body_info, long id,String key){
+        JsonNode node = null;
+        try {
+            node = objectMapper.readTree(body_info);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        ArrayNode arrayNode = (ArrayNode) node.get("g_gamers").get(key);
+        // 使用 elements() 方法获取迭代器
+        Iterator<JsonNode> iterator = arrayNode.elements();
+
+        // 遍历迭代器以访问数组中的每个元素
+        while (iterator.hasNext()) {
+            JsonNode element = iterator.next();
+            if (element.get("id").asLong() == id) return true;
+        }
+        return false;
     }
 }

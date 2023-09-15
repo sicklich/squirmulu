@@ -2,19 +2,21 @@ package com.sparkfire.squirmulu.dao;
 
 import com.sparkfire.squirmulu.entity.NpcCard;
 import com.sparkfire.squirmulu.entity.PlayerCard;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Mapper
 public interface CardDao {
-    @Insert("INSERT INTO card(id,card_creator,c_time,m_time,body_info) VALUES (#{id},#{card_creator},#{c_time},#{m_time},#{body_info})")
+    @Insert("INSERT INTO card(id,card_creator,c_time,m_time,role_card) VALUES (#{id},#{card_creator},#{c_time},#{m_time},#{role_card})")
     void insert(PlayerCard info);
 
-    @Insert("SELECT id,card_creator,c_time,m_time,body_info from card WHERE id=#{id}")
+    @Select("SELECT id,card_creator,c_time,m_time,role_card from card WHERE id=#{id}")
     PlayerCard get(@Param("id")long id);
+
+    @Select("SELECT id,c_time,card_creator,role_card,m_time from card")
+    List<PlayerCard> getAll();
 
     @Update("UPDATE card SET body_info=#{body_info}, edit_time=#{edit_time} WHERE id=#{id}")
     void update(PlayerCard info);

@@ -1,12 +1,10 @@
 package com.sparkfire.squirmulu.entity;
 
-import java.math.BigDecimal;
-
 public class PlayerCard {
     private long id;
     private long c_time;
     private long card_creator;
-    private String body_info;
+    private String role_card;
 
     private long m_time;
 
@@ -14,7 +12,7 @@ public class PlayerCard {
         this.id = id;
         this.c_time = c_time;
         this.card_creator = card_creator;
-        this.body_info = body_info;
+        this.role_card = body_info;
         this.m_time = m_time;
     }
 
@@ -42,12 +40,12 @@ public class PlayerCard {
         this.card_creator = card_creator;
     }
 
-    public String getBody_info() {
-        return body_info;
+    public String getRole_card() {
+        return role_card;
     }
 
-    public void setBody_info(String body_info) {
-        this.body_info = body_info;
+    public void setRole_card(String role_card) {
+        this.role_card = role_card;
     }
 
     public long getM_time() {
