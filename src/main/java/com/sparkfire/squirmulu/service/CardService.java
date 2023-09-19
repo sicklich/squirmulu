@@ -3,6 +3,7 @@ package com.sparkfire.squirmulu.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sparkfire.squirmulu.dao.CardDao;
 import com.sparkfire.squirmulu.dao.NpcCardDao;
 import com.sparkfire.squirmulu.entity.IndexBody;
@@ -82,20 +83,38 @@ public class CardService {
         return new CommonGameRes(String.valueOf(body.getId()));
     }
 
-    public CommonResponse myCardList(MyPlayerCardListReq req){
-        if(!req.getType().equals("player")){
+    public CommonResponse pullPlayerCardByID(long id){
+        return CommonResponse.success(cardDao.get(id));
+    }
+
+    public CommonResponse myCardList(MyPlayerCardListReq req) {
+        if (!req.getType().equals("player")) {
             throw new ServiceException("不支持的查询类型");
         }
         List<PlayerCard> lists = cardDao.getAll();
         List<PlayerCard> list = lists.stream().filter(card -> {
-            String bodyinfo = card.getRole_card();
-            try {
-                JsonNode node = objectMapper.readTree(bodyinfo);
-                return node.get("a_setting").get("card_user").asLong() == req.getId();
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }).skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
+                    String bodyinfo = card.getRole_card();
+                    try {
+                        JsonNode node = objectMapper.readTree(bodyinfo);
+                        return node.get("a_setting").get("card_user").asLong() == req.getId();
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).map(card -> {
+                    String bodyinfo = card.getRole_card();
+                    try {
+                        JsonNode node = objectMapper.readTree(bodyinfo);
+                        if (node.isObject()) {
+                            ObjectNode objectNode = (ObjectNode) node;
+                            objectNode.retain("a_setting"); // 仅保留目标键值对
+                            card.setRole_card(objectMapper.writeValueAsString(objectNode));
+                        }
+                        return card;
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
 
         return CommonResponse.success(list);
 

@@ -264,6 +264,7 @@ public class RoomService {
         String edited = JsonUtil.updateKeyForJsonBody(roomInfo.getBody_info(), List.of(new IndexTarget("r_state", 2
                 , List.of("r_info"), String.valueOf(RoomStatus.RECRUITING.getStatusValue()))));
         roomInfo.setBody_info(edited);
+        processBaseInfo(roomInfo);
         redisClient.addObject(key, String.valueOf(roomInfo.getId()), roomInfo);
         return new CommonGameRes(String.valueOf(roomInfo.getId()));
     }
@@ -271,16 +272,10 @@ public class RoomService {
     public RoomListRes getRoomList(RoomListCondition condition, int page_cur, int page_size) {
         //redis 获取 排序
         try {
-            List<GameListElement> list = redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class).stream()
-                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
-                    .sorted(condition.getRoomConditionComparator())
-                    .map(roomInfo -> new GameListElement(roomInfo.getId(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
-                    .skip((long) page_size * (page_cur - 1)).limit(page_size)
-                    .collect(Collectors.toList());
             return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class).stream()
                     .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .sorted(condition.getRoomConditionComparator())
-                    .map(roomInfo -> new GameListElement(roomInfo.getId(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
+                    .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
                     .skip((long) page_size * (page_cur - 1)).limit(page_size).collect(Collectors.toList()));
         } catch (Exception e) {
             return new RoomListRes(new ArrayList<>());
@@ -305,14 +300,30 @@ public class RoomService {
         }
         String finalKey = key;
         List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class));
-        list.stream().filter(room -> roomForSomeone(room.getBody_info(), req.getId(), finalKey))
+        list = list.stream()
+                .filter(room -> roomForSomeone(room.getBody_info(), req.getId(), finalKey))
+                .map(room ->
+                {
+                    String bodyinfo = room.getBody_info();
+                    try {
+                        JsonNode node = objectMapper.readTree(bodyinfo);
+                        if (node.isObject()) {
+                            ObjectNode objectNode = (ObjectNode) node;
+                            objectNode.retain("r_info"); // 仅保留目标键值对
+                            room.setBody_info(objectMapper.writeValueAsString(objectNode));
+                        }
+                        return room;
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
 
         return CommonResponse.success(list);
 
     }
 
-    boolean roomForSomeone(String body_info, long id,String key){
+    boolean roomForSomeone(String body_info, long id, String key) {
         JsonNode node = null;
         try {
             node = objectMapper.readTree(body_info);

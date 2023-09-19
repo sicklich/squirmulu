@@ -5,6 +5,7 @@ import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.NpcCard;
 import com.sparkfire.squirmulu.entity.PlayerCard;
+import com.sparkfire.squirmulu.entity.request.PullCardReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.service.CardService;
 import com.sparkfire.squirmulu.service.RoomService;
@@ -21,6 +22,11 @@ public class CardController {
     @RequestMapping("/card-npc/new-card")
     public CommonResponse newNpcCard(@RequestBody NpcCard card) {
         return CommonResponse.success(cardService.createNpcCard(card));
+    }
+
+    @RequestMapping("/card-player/pull-card")
+    public CommonResponse pullPlayerCard(@RequestBody PullCardReq req) {
+        return CommonResponse.success(cardService.pullPlayerCardByID(req.getId()));
     }
 
     @RequestMapping("/card-npc/delete-card")
