@@ -1,9 +1,12 @@
 package com.sparkfire.squirmulu.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.Objects;
-
+@Document(indexName = "my_index")
 public class RoomInfo {
     private long id;
     private int status;
@@ -17,9 +20,12 @@ public class RoomInfo {
     private long create_time;
     private long publish_time;
     protected long edit_time;
+    @Field(type = FieldType.Text)
+    private String r_name;
+    @Field(type = FieldType.Text)
+    private String r_des;
 
-
-    public RoomInfo(long id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long publish_time, long edit_time) {
+    public RoomInfo(long id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long publish_time, long edit_time, String r_name, String r_des) {
         this.id = id;
         this.status = status;
         this.pl_cur = pl_cur;
@@ -31,6 +37,24 @@ public class RoomInfo {
         this.create_time = create_time;
         this.publish_time = publish_time;
         this.edit_time = edit_time;
+        this.r_name = r_name;
+        this.r_des = r_des;
+    }
+
+    public String getR_name() {
+        return r_name;
+    }
+
+    public void setR_name(String r_name) {
+        this.r_name = r_name;
+    }
+
+    public String getR_des() {
+        return r_des;
+    }
+
+    public void setR_des(String r_des) {
+        this.r_des = r_des;
     }
 
     public RoomInfo() {
