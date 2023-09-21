@@ -6,7 +6,6 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.Objects;
-@Document(indexName = "my_index")
 public class RoomInfo {
     private long id;
     private int status;
@@ -20,9 +19,7 @@ public class RoomInfo {
     private long create_time;
     private long publish_time;
     protected long edit_time;
-    @Field(type = FieldType.Text)
     private String r_name;
-    @Field(type = FieldType.Text)
     private String r_des;
 
     public RoomInfo(long id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long publish_time, long edit_time, String r_name, String r_des) {
