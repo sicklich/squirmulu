@@ -66,6 +66,21 @@ public class RedisClient {
                 .collect(Collectors.toList());
     }
 
+    // 获取整个对象列表
+    public <T> List<T> getFields(String key, List<String> fields, Class<T> clazz) {
+        HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
+        List<String> list = hashOperations.multiGet(key, fields);
+        return list.stream()
+                .map(value -> {
+                    try {
+                        return objectMapper.readValue(value, clazz);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
 
 
 // 获取zset中的所有元素，并将其转换为特定类型的对象

@@ -8,10 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.config.RoomStatus;
 import com.sparkfire.squirmulu.dao.RoomDao;
-import com.sparkfire.squirmulu.entity.IndexBody;
-import com.sparkfire.squirmulu.entity.IndexTarget;
-import com.sparkfire.squirmulu.entity.PlayerCard;
-import com.sparkfire.squirmulu.entity.RoomInfo;
+import com.sparkfire.squirmulu.entity.*;
 import com.sparkfire.squirmulu.entity.request.ChatListReq;
 import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
 import com.sparkfire.squirmulu.entity.request.MyRoomListReq;
@@ -38,6 +35,9 @@ public class RoomService {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    RoomSearchService roomSearchService;
 
     private static final String body_info = "{" +
             "  \"id\": \"\"," +
@@ -169,6 +169,11 @@ public class RoomService {
         info.setEdit_time(now);
         info.setBody_info(body_info);
         processBaseInfo(info);
+        RoomESInfo esInfo = new RoomESInfo();
+        esInfo.setId(info.getId());
+        esInfo.setR_des(info.getR_des());
+        esInfo.setR_name(info.getR_name());
+        roomSearchService.save(esInfo);
         redisClient.addObject(RedisClient.room_list, String.valueOf(id), info);
         return new CommonGameRes(String.valueOf(id));
 //        roomDao.insert(info);
@@ -197,6 +202,8 @@ public class RoomService {
         arrayNode.add(objectNode);
         info.setPl_cur(node.get("r_info").get("pl_cur").asInt());
         info.setPl_cur(node.get("r_info").get("pl_max").asInt());
+        info.setR_name(node.get("r_info").get("r_name").asText());
+        info.setR_des(node.get("r_info").get("r_des").asText());
         info.setBody_info(node.toString());
     }
 
@@ -267,6 +274,22 @@ public class RoomService {
         processBaseInfo(roomInfo);
         redisClient.addObject(key, String.valueOf(roomInfo.getId()), roomInfo);
         return new CommonGameRes(String.valueOf(roomInfo.getId()));
+    }
+
+    public RoomListRes searchRoomList(String keyword) {
+        //redis 获取 排序
+        try {
+            return new RoomListRes(redisClient.getFields(RedisClient.room_list,
+                            roomSearchService.searchByKeyword(keyword)
+                                    .stream().map(Object::toString).collect(Collectors.toList())
+                            , RoomInfo.class).stream()
+//                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
+                    .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
+                    .collect(Collectors.toList()));
+        } catch (Exception e) {
+            return new RoomListRes(new ArrayList<>());
+        }
+
     }
 
     public RoomListRes getRoomList(RoomListCondition condition, int page_cur, int page_size) {
