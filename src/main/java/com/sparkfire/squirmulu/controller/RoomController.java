@@ -6,6 +6,7 @@ import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.RoomInfo;
 import com.sparkfire.squirmulu.entity.request.ChatListReq;
 import com.sparkfire.squirmulu.entity.request.RoomListReq;
+import com.sparkfire.squirmulu.entity.request.RoomSearchListReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,11 @@ public class RoomController {
     @RequestMapping("/game-list/pull-condition")
     public CommonResponse pull_condition(@RequestBody RoomListReq req) {
         return CommonResponse.success(roomService.getRoomList(RoomListCondition.getByValue(req.getCondition()),req.getPage_cur(),req.getPage_size()));
+    }
+
+    @RequestMapping("/game-list/pull-search")
+    public CommonResponse pull_search(@RequestBody RoomSearchListReq req) {
+        return CommonResponse.success(roomService.searchRoomList(req));
     }
 
 }

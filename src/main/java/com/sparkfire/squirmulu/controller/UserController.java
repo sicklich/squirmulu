@@ -38,10 +38,16 @@ public class UserController {
      * @param user
      * @return
      */
+//    @PostMapping("/user-account/login")
+//    @ApiOperation("用户登录")
+//    public Result<Map<String, Object>> login(@RequestBody SysUser user) {
+//        return Result.ok(sysUserService.login(user.getEmail(), user.getPwd()));
+//    }
+
     @PostMapping("/user-account/login")
     @ApiOperation("用户登录")
-    public Result<Map<String, Object>> login(@RequestBody SysUser user) {
-        return Result.ok(sysUserService.login(user.getEmail(), user.getPwd()));
+    public CommonResponse login(@RequestBody SysUser user) {
+        return CommonResponse.success(sysUserService.loginV2(user.getEmail(), user.getPwd()));
     }
 
     /**

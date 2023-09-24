@@ -10,6 +10,8 @@ public class TokenConstants
      */
     public static final String AUTHENTICATION = "Authorization";
 
+    public static final String USERID = "User-Id";
+
     /**
      * 令牌前缀
      */

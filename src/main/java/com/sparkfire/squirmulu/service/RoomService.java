@@ -12,6 +12,7 @@ import com.sparkfire.squirmulu.entity.*;
 import com.sparkfire.squirmulu.entity.request.ChatListReq;
 import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
 import com.sparkfire.squirmulu.entity.request.MyRoomListReq;
+import com.sparkfire.squirmulu.entity.request.RoomSearchListReq;
 import com.sparkfire.squirmulu.entity.response.*;
 import com.sparkfire.squirmulu.exception.ServiceException;
 import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAll;
@@ -36,15 +37,15 @@ public class RoomService {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Autowired
-    RoomSearchService roomSearchService;
+//    @Autowired
+//    RoomSearchService roomSearchService;
 
     private static final String body_info = "{" +
             "  \"id\": \"\"," +
             "  \"kp_id\": \"\"," +
             "  \"r_info\": {" +
             "    \"r_img\": \"\"," +
-            "    \"r_name\": \"\"," +
+            "    \"r_name\": \"测试搜索1\"," +
             "    \"kp_name\": \"\"," +
             "    \"c_time\": \"\"," +
             "    \"g_time\": \"\"," +
@@ -54,7 +55,7 @@ public class RoomService {
             "    \"r_tags\": [" +
             "      \"COC7th\"" +
             "    ]," +
-            "    \"r_des\": \"\"" +
+            "    \"r_des\": \"测试描述\"" +
             "  }," +
             "  \"g_setting\": {" +
             "    \"g_type\": \"COC\"," +
@@ -169,11 +170,11 @@ public class RoomService {
         info.setEdit_time(now);
         info.setBody_info(body_info);
         processBaseInfo(info);
-        RoomESInfo esInfo = new RoomESInfo();
-        esInfo.setId(info.getId());
-        esInfo.setR_des(info.getR_des());
-        esInfo.setR_name(info.getR_name());
-        roomSearchService.save(esInfo);
+//        RoomESInfo esInfo = new RoomESInfo();
+//        esInfo.setId(info.getId());
+//        esInfo.setR_des(info.getR_des());
+//        esInfo.setR_name(info.getR_name());
+        roomDao.insert(info);
         redisClient.addObject(RedisClient.room_list, String.valueOf(id), info);
         return new CommonGameRes(String.valueOf(id));
 //        roomDao.insert(info);
@@ -189,22 +190,23 @@ public class RoomService {
         JsonNode node = null;
         try {
             node = mapper.readTree(info.getBody_info());
+            info.setG_time(node.get("r_info").get("g_time").asLong());
+            ((ObjectNode) node).put("id", String.valueOf(info.getId()));
+            info.setPwd(node.get("r_setting").get("r_rule").get("r_acc").get("password").asText());
+            ((ObjectNode) node.get("r_setting").get("r_rule").get("r_acc")).put("account", String.valueOf(info.getId()));
+            ArrayNode arrayNode = (ArrayNode) node.get("g_gamers").get("g_keepers");
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            objectNode.put("id", info.getKp_id());
+            arrayNode.add(objectNode);
+            info.setPl_cur(node.get("r_info").get("pl_cur").asInt());
+            info.setPl_cur(node.get("r_info").get("pl_max").asInt());
+            info.setR_name(node.get("r_info").get("r_name").asText());
+            info.setR_des(node.get("r_info").get("r_des").asText());
+            info.setR_tags(objectMapper.writeValueAsString(node.get("r_info").get("r_tags")));
+            info.setBody_info(node.toString());
         } catch (JsonProcessingException e) {
             return;
         }
-        info.setG_time(node.get("r_info").get("g_time").asLong());
-        ((ObjectNode) node).put("id", String.valueOf(info.getId()));
-        info.setPwd(node.get("r_setting").get("r_rule").get("r_acc").get("password").asText());
-        ((ObjectNode) node.get("r_setting").get("r_rule").get("r_acc")).put("account", String.valueOf(info.getId()));
-        ArrayNode arrayNode = (ArrayNode) node.get("g_gamers").get("g_keepers");
-        ObjectNode objectNode = objectMapper.createObjectNode();
-        objectNode.put("id", info.getKp_id());
-        arrayNode.add(objectNode);
-        info.setPl_cur(node.get("r_info").get("pl_cur").asInt());
-        info.setPl_cur(node.get("r_info").get("pl_max").asInt());
-        info.setR_name(node.get("r_info").get("r_name").asText());
-        info.setR_des(node.get("r_info").get("r_des").asText());
-        info.setBody_info(node.toString());
     }
 
     public CommonGameRes updateRoom(IndexBody body) throws JsonProcessingException {
@@ -273,15 +275,24 @@ public class RoomService {
         roomInfo.setBody_info(edited);
         processBaseInfo(roomInfo);
         redisClient.addObject(key, String.valueOf(roomInfo.getId()), roomInfo);
+        roomDao.update(roomInfo);
         return new CommonGameRes(String.valueOf(roomInfo.getId()));
     }
 
-    public RoomListRes searchRoomList(String keyword) {
-        //redis 获取 排序
+    public RoomListRes searchRoomList(RoomSearchListReq req) {
         try {
+            if (req.getSearch_type().equals("room")) {
+                RoomInfo room = redisClient.getObjectById(RedisClient.room_list,
+                        req.getKey_words()
+                        , RoomInfo.class);
+//                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
+                GameListElement gameElement = new GameListElement(room.getId(), room.getPwd(), JsonUtil.get(room.getBody_info(), "r_info"));
+                return new RoomListRes(List.of(gameElement));
+            }
+            //redis 获取 排序
+            List<Long> ids = req.getSearch_type().equals("general") ? roomDao.searchByKeyWords(req.getKey_words()) : roomDao.searchByTags(req.getKey_words());
             return new RoomListRes(redisClient.getFields(RedisClient.room_list,
-                            roomSearchService.searchByKeyword(keyword)
-                                    .stream().map(Object::toString).collect(Collectors.toList())
+                            ids.stream().map(Object::toString).collect(Collectors.toList())
                             , RoomInfo.class).stream()
 //                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))

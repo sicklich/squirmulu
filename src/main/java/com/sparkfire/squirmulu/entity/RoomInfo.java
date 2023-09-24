@@ -1,10 +1,5 @@
 package com.sparkfire.squirmulu.entity;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
-
 import java.util.Objects;
 public class RoomInfo {
     private long id;
@@ -22,7 +17,9 @@ public class RoomInfo {
     private String r_name;
     private String r_des;
 
-    public RoomInfo(long id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long publish_time, long edit_time, String r_name, String r_des) {
+    private String r_tags;
+
+    public RoomInfo(long id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags) {
         this.id = id;
         this.status = status;
         this.pl_cur = pl_cur;
@@ -36,6 +33,15 @@ public class RoomInfo {
         this.edit_time = edit_time;
         this.r_name = r_name;
         this.r_des = r_des;
+        this.r_tags = r_tags;
+    }
+
+    public String getR_tags() {
+        return r_tags;
+    }
+
+    public void setR_tags(String r_tags) {
+        this.r_tags = r_tags;
     }
 
     public String getR_name() {

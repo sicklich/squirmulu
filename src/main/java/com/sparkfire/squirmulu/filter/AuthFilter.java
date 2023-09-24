@@ -91,6 +91,9 @@ public class AuthFilter implements Filter, Ordered {
             if (StrUtil.isBlank(userName)) {
                 throw new ServiceException(ErrorCode.AUTH_ERROR);
             }
+            if(!JwtUtils.getUserId(token).equals(httpServletRequest.getHeader(TokenConstants.USERID))){
+                throw new ServiceException(ErrorCode.AUTH_ERROR);
+            }
         } catch (Exception e) {
             // 自定义异常的类，用户返回给客户端相应的JSON格式的信息
             Result result = Result.fail(ErrorCode.AUTH_ERROR.getCode(), ErrorCode.AUTH_ERROR.getMessage());
@@ -139,6 +142,10 @@ public class AuthFilter implements Filter, Ordered {
             token = token.replaceFirst(TokenConstants.PREFIX, StringUtils.EMPTY);
         }
         return token;
+    }
+
+    private String getUserID(HttpServletRequest request) {
+        return request.getHeader(TokenConstants.USERID);
     }
 
 }

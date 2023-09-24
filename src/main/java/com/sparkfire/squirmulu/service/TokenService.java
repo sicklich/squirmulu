@@ -31,6 +31,7 @@ public class TokenService
         // Jwt存储信息
         Map<String, Object> claimsMap = new HashMap<String, Object>();
         claimsMap.put(SecurityConstants.USER_KEY, token);
+        claimsMap.put(SecurityConstants.DETAILS_USER_ID, loginUser.getSysUser().getId());
         claimsMap.put(SecurityConstants.DETAILS_USERNAME, loginName);
 
         // 接口返回信息
