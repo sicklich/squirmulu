@@ -72,7 +72,7 @@ public class AuthFilter implements Filter, Ordered {
         httpServletResponse.setHeader("Access-Control-Allow-Origin", "*");
         httpServletResponse.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
         httpServletResponse.setHeader("Access-Control-Max-Age", "3600");
-        httpServletResponse.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept,X-Requested-With");
+        httpServletResponse.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept,X-Requested-With, User-Id");
 
         String url = httpServletRequest.getRequestURI();
 
