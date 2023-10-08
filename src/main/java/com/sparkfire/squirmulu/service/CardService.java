@@ -9,6 +9,7 @@ import com.sparkfire.squirmulu.dao.NpcCardDao;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.NpcCard;
 import com.sparkfire.squirmulu.entity.PlayerCard;
+import com.sparkfire.squirmulu.entity.PlayerCardIDString;
 import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.entity.response.CommonGameRes;
@@ -92,7 +93,7 @@ public class CardService {
             throw new ServiceException("不支持的查询类型");
         }
         List<PlayerCard> lists = cardDao.getAll();
-        List<PlayerCard> list = lists.stream().filter(card -> {
+        List<PlayerCardIDString> list = lists.stream().filter(card -> {
                     String bodyinfo = card.getRole_card();
                     try {
                         JsonNode node = objectMapper.readTree(bodyinfo);
@@ -109,12 +110,13 @@ public class CardService {
                             objectNode.retain("a_setting"); // 仅保留目标键值对
                             card.setRole_card(objectMapper.writeValueAsString(objectNode));
                         }
-                        return card;
+                        return new PlayerCardIDString(String.valueOf(card.getId()),card.getCard_creator(),card.getC_time(),card.getM_time(), card.getRole_card());
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
                 })
                 .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
+
 
         return CommonResponse.success(list);
 
