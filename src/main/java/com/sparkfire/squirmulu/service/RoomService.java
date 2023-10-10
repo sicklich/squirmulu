@@ -216,6 +216,7 @@ public class RoomService {
         info.setBody_info(edited);
         //todo  需要测试 引用部分需要认真对待
         processBaseInfo(info);
+        roomDao.update(info);
         redisClient.addObject(key, String.valueOf(info.getId()), info);
         return new CommonGameRes(String.valueOf(info.getId()));
     }
@@ -275,6 +276,8 @@ public class RoomService {
         roomInfo.setBody_info(edited);
         processBaseInfo(roomInfo);
         redisClient.addObject(key, String.valueOf(roomInfo.getId()), roomInfo);
+        long now = System.currentTimeMillis()/1000;
+        roomInfo.setEdit_time(now);
         roomDao.update(roomInfo);
         return new CommonGameRes(String.valueOf(roomInfo.getId()));
     }
