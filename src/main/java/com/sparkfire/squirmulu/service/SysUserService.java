@@ -9,7 +9,7 @@ import java.util.Map;
 public interface SysUserService
 {
 
-    public Boolean insert(SysUser sysUser);
+    Boolean insert(SysUser sysUser);
 
     Map<String, Object> login(String email, String pwd);
 
@@ -17,7 +17,8 @@ public interface SysUserService
 
 
     SysUser getUserInfoById(Long id);
-    //  public int update( SysUser sysUser );
+
+    SysUser update(SysUser sysUser);
 //
 // public int deleteById(Long id);
 }

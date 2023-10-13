@@ -62,6 +62,11 @@ public class UserController {
         return Result.ok(sysUserService.insert(user) );
     }
 
+    @RequestMapping("/user-account/update-info")
+    public CommonResponse update(@RequestBody SysUser user) {
+        return CommonResponse.success(sysUserService.update(user));
+    }
+
 
     /**
      * 用户详情

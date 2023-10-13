@@ -3,6 +3,7 @@ package com.sparkfire.squirmulu.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.entity.IndexBody;
+import com.sparkfire.squirmulu.entity.RoomCardUpdateReq;
 import com.sparkfire.squirmulu.entity.RoomInfo;
 import com.sparkfire.squirmulu.entity.request.ChatListReq;
 import com.sparkfire.squirmulu.entity.request.RoomListReq;
@@ -41,6 +42,11 @@ public class RoomController {
     @RequestMapping("/game-deal/update-room")
     public CommonResponse update_room(@RequestBody IndexBody indexBody) throws JsonProcessingException {
         System.out.println("id:"+indexBody.getId()+"time:"+System.currentTimeMillis()/1000);
+        return CommonResponse.success(roomService.updateRoom(indexBody));
+    }
+
+    @RequestMapping("/game-deal/update-room-card")
+    public CommonResponse update_room_card(@RequestBody RoomCardUpdateReq req) throws JsonProcessingException {
         return CommonResponse.success(roomService.updateRoom(indexBody));
     }
 

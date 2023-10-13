@@ -12,5 +12,7 @@ public interface SysUserMapper {
 
     SysUser getSysUserInfoById(Long id);
 
+    int update(SysUser user);
+
     int updateLastSignInTime(Long id);
 }

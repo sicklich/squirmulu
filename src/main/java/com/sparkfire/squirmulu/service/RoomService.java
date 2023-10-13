@@ -221,6 +221,18 @@ public class RoomService {
         return new CommonGameRes(String.valueOf(info.getId()));
     }
 
+    public CommonGameRes updateRoomCard(RoomCardUpdateReq req) throws JsonProcessingException {
+        RoomInfo info = redisClient.getObjectById(RedisClient.room_list, req.getId(), RoomInfo.class);
+        // 解析 JSON 字符串
+        JsonNode data = objectMapper.readTree(info.getBody_info());
+        for(RoomCardUpdateTarget target:req.getTargets()){
+            switch (target.getMode()){
+                case "keep":
+
+            }
+        }
+    }
+
     public RoomInfoRes getRoomInfo(IndexBody body) throws JsonProcessingException {
         String key = RedisClient.room_list;
         RoomInfo info = redisClient.getObjectById(key, String.valueOf(body.getId()), RoomInfo.class);
