@@ -4,7 +4,6 @@ import java.util.List;
 
 public class RoomCardUpdateTarget {
     private String mode;
-
     private String target;
 
     public RoomCardUpdateTarget(String mode, String target) {

@@ -5,6 +5,7 @@ import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.NpcCard;
 import com.sparkfire.squirmulu.entity.PlayerCard;
+import com.sparkfire.squirmulu.entity.request.DeleteCardReq;
 import com.sparkfire.squirmulu.entity.request.PullCardReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.service.CardService;
@@ -25,7 +26,7 @@ public class CardController {
     }
 
     @RequestMapping("/card-player/pull-card")
-    public CommonResponse pullPlayerCard(@RequestBody PullCardReq req) {
+    public CommonResponse pullPlayerCard(@RequestBody PullCardReq req) throws JsonProcessingException {
         return CommonResponse.success(cardService.pullPlayerCardByID(req.getId()));
     }
 
@@ -40,13 +41,13 @@ public class CardController {
     }
 
     @RequestMapping("/card-player/new-card")
-    public CommonResponse new_player_card(@RequestBody PlayerCard playerCard) {
+    public CommonResponse new_player_card(@RequestBody PlayerCard playerCard) throws JsonProcessingException {
         return CommonResponse.success(cardService.createPlayerCard(playerCard));
     }
 
     @RequestMapping("/card-player/delete-card")
-    public CommonResponse delete_player_card(@RequestParam(value = "id", required = true) long id) {
-        return CommonResponse.success(cardService.deletePlayerCard(id));
+    public CommonResponse delete_player_card(@RequestBody DeleteCardReq req) {
+        return CommonResponse.success(cardService.deletePlayerCard(Long.parseLong(req.getId())));
     }
 
     @RequestMapping("/card-player/update-card")

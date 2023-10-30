@@ -15,10 +15,13 @@ public interface CardDao {
     @Select("SELECT id,card_creator,c_time,m_time,role_card from card WHERE id=#{id}")
     PlayerCard get(@Param("id")long id);
 
+    @Select("SELECT role_card from card WHERE id=#{id}")
+    String getRoleCardByID(@Param("id")long id);
+
     @Select("SELECT id,card_creator,c_time,m_time,role_card from card")
     List<PlayerCard> getAll();
 
-    @Update("UPDATE card SET body_info=#{body_info}, edit_time=#{edit_time} WHERE id=#{id}")
+    @Update("UPDATE card SET role_card=#{role_card}, m_time=#{m_time} WHERE id=#{id}")
     void update(PlayerCard info);
 
     @Insert("DELETE from card WHERE id=#{id}")

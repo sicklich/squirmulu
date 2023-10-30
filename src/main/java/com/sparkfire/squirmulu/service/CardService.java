@@ -46,12 +46,15 @@ public class CardService {
         return new CommonGameRes(String.valueOf(id));
     }
 
-    public CommonGameRes createPlayerCard(PlayerCard card) {
+    public CommonGameRes createPlayerCard(PlayerCard card) throws JsonProcessingException {
         long now = System.currentTimeMillis() / 1000;
         long id = SnowflakeGenerator.nextId();
         card.setId(id);
         card.setC_time(now);
         card.setM_time(now);
+        ObjectNode cardJson = (ObjectNode) objectMapper.readTree(card.getRole_card());
+        cardJson.put("id", id);
+        card.setRole_card(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(cardJson));
         cardDao.insert(card);
         return new CommonGameRes(String.valueOf(id));
 //        roomDao.insert(info);
@@ -84,8 +87,9 @@ public class CardService {
         return new CommonGameRes(String.valueOf(body.getId()));
     }
 
-    public CommonResponse pullPlayerCardByID(long id){
-        return CommonResponse.success(cardDao.get(id));
+    public CommonResponse pullPlayerCardByID(long id) throws JsonProcessingException {
+        PlayerCard card = cardDao.get(id);
+        return CommonResponse.success(new PlayerCardIDString(String.valueOf(card.getId()),card.getCard_creator(),card.getC_time(),card.getM_time(),card.getRole_card()));
     }
 
     public CommonResponse myCardList(MyPlayerCardListReq req) {
@@ -110,7 +114,7 @@ public class CardService {
                             objectNode.retain("a_setting"); // 仅保留目标键值对
                             card.setRole_card(objectMapper.writeValueAsString(objectNode));
                         }
-                        return new PlayerCardIDString(String.valueOf(card.getId()),card.getCard_creator(),card.getC_time(),card.getM_time(), card.getRole_card());
+                        return new PlayerCardIDString(String.valueOf(card.getId()), card.getCard_creator(), card.getC_time(), card.getM_time(), card.getRole_card());
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }

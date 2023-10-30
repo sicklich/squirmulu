@@ -6,6 +6,7 @@ import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.RoomCardUpdateReq;
 import com.sparkfire.squirmulu.entity.RoomInfo;
 import com.sparkfire.squirmulu.entity.request.ChatListReq;
+import com.sparkfire.squirmulu.entity.request.DeleteRoomReq;
 import com.sparkfire.squirmulu.entity.request.RoomListReq;
 import com.sparkfire.squirmulu.entity.request.RoomSearchListReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
@@ -35,8 +36,8 @@ public class RoomController {
     }
 
     @RequestMapping("/game-deal/delete-room")
-    public CommonResponse delete_room(@RequestParam(value = "id", required = true) String id) {
-        return CommonResponse.success(roomService.deleteRoom(id));
+    public CommonResponse delete_room(@RequestBody DeleteRoomReq req) {
+        return CommonResponse.success(roomService.deleteRoom(req.getId()));
     }
 
     @RequestMapping("/game-deal/update-room")
@@ -47,7 +48,7 @@ public class RoomController {
 
     @RequestMapping("/game-deal/update-room-card")
     public CommonResponse update_room_card(@RequestBody RoomCardUpdateReq req) throws JsonProcessingException {
-        return CommonResponse.success(roomService.updateRoom(indexBody));
+        return CommonResponse.success(roomService.updateRoomCard(req));
     }
 
     @RequestMapping("/game-into/pull-into")

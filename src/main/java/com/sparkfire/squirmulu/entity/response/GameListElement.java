@@ -1,12 +1,12 @@
 package com.sparkfire.squirmulu.entity.response;
 
 public class GameListElement {
-    private long id;
+    private String id;
 
     private String pwd;
     private String r_info;
 
-    public GameListElement(long id, String pwd, String r_info) {
+    public GameListElement(String id, String pwd, String r_info) {
         this.id = id;
         this.pwd = pwd;
         this.r_info = r_info;
@@ -20,11 +20,11 @@ public class GameListElement {
         this.pwd = pwd;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

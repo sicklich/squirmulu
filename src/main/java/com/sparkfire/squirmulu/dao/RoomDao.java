@@ -17,6 +17,9 @@ public interface RoomDao {
     @Select("SELECT * from room WHERE id=#{id}")
     RoomInfo getByID(@Param("id") long id);
 
+    @Delete("DELETE from room WHERE id=#{id}")
+    int deleteRoom(@Param("id") long id);
+
     @Select("SELECT id from room WHERE r_name like '%${keyWord}%' or r_des like '%${keyWord}%'")
     List<Long> searchByKeyWords(@Param("keyWord") String keyWord);
 

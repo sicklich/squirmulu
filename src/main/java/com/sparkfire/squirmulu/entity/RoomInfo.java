@@ -2,7 +2,7 @@ package com.sparkfire.squirmulu.entity;
 
 import java.util.Objects;
 public class RoomInfo {
-    private long id;
+    private String id;
     private int status;
     private int pl_cur;
     private int pl_max;
@@ -19,7 +19,7 @@ public class RoomInfo {
 
     private String r_tags;
 
-    public RoomInfo(long id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags) {
+    public RoomInfo(String id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags) {
         this.id = id;
         this.status = status;
         this.pl_cur = pl_cur;
@@ -91,11 +91,11 @@ public class RoomInfo {
         this.status = status;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

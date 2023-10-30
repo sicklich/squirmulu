@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.config.RoomStatus;
+import com.sparkfire.squirmulu.dao.CardDao;
 import com.sparkfire.squirmulu.dao.RoomDao;
 import com.sparkfire.squirmulu.entity.*;
 import com.sparkfire.squirmulu.entity.request.ChatListReq;
@@ -36,6 +37,9 @@ public class RoomService {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    CardDao cardDao;
 
 //    @Autowired
 //    RoomSearchService roomSearchService;
@@ -165,7 +169,7 @@ public class RoomService {
     public CommonGameRes createRoom(RoomInfo info) {
         long now = System.currentTimeMillis() / 1000;
         long id = SnowflakeGenerator.nextId();
-        info.setId(id);
+        info.setId(String.valueOf(id));
         info.setCreate_time(now);
         info.setEdit_time(now);
         info.setBody_info(body_info);
@@ -182,6 +186,7 @@ public class RoomService {
 
     public CommonGameRes deleteRoom(String id) {
         redisClient.deleteObject(RedisClient.room_list, id);
+        roomDao.deleteRoom(Long.parseLong(id));
         return new CommonGameRes(id);
     }
 
@@ -221,16 +226,83 @@ public class RoomService {
         return new CommonGameRes(String.valueOf(info.getId()));
     }
 
-    public CommonGameRes updateRoomCard(RoomCardUpdateReq req) throws JsonProcessingException {
+    public CommonResponse updateRoomCard(RoomCardUpdateReq req) throws JsonProcessingException {
         RoomInfo info = redisClient.getObjectById(RedisClient.room_list, req.getId(), RoomInfo.class);
         // 解析 JSON 字符串
         JsonNode data = objectMapper.readTree(info.getBody_info());
+
         for(RoomCardUpdateTarget target:req.getTargets()){
             switch (target.getMode()){
                 case "keep":
+                    ArrayNode gKeepers = (ArrayNode) data.path("g_gamers").path("g_keepers");
+                    ObjectNode newObject = objectMapper.createObjectNode();
+                    newObject.put("Id", req.getCard_id());
+                    newObject.put("rolecard", cardDao.getRoleCardByID(Long.parseLong(req.getCard_id())));
+                    gKeepers.add(newObject);
+
+                    // 将修改后的数据转换回 JSON 字符串
+                    String updatedJsonStr = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+                    info.setBody_info(updatedJsonStr);
+                    redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
+                    break;
+                case "join":
+                    ArrayNode target_users = (ArrayNode) data.path("g_gamers").path(target.getTarget());
+                    ObjectNode targetObject = objectMapper.createObjectNode();
+                    targetObject.put("Id", req.getCard_id());
+                    targetObject.put("rolecard", cardDao.getRoleCardByID(Long.parseLong(req.getCard_id())));
+                    target_users.add(targetObject);
+
+                    // 将修改后的数据转换回 JSON 字符串
+                    String updated = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+                    info.setBody_info(updated);
+                    redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
+                    break;
+                case "kickoff":
+                    ArrayNode target_gamers = (ArrayNode) data.path("g_gamers").path(target.getTarget());
+                    // 遍历 g_keepers 数组并检查每个元素的 Id 值
+                    for (int i = 0; i < target_gamers.size(); i++) {
+                        JsonNode keeper = target_gamers.get(i);
+                        String id = keeper.path("Id").asText();
+
+                        // 如果找到匹配的元素，则将其删除
+                        if (req.getCard_id().equals(id)) {
+                            target_gamers.remove(i);
+                            break;
+                        }
+                    }
+                    break;
+                case "change":
+                    ArrayNode target_objects = (ArrayNode) data.path("g_gamers").path(target.getTarget());
+                    // 遍历 g_keepers 数组并检查每个元素的 Id 值
+                    for (int i = 0; i < target_objects.size(); i++) {
+                        JsonNode keeper = target_objects.get(i);
+                        String id = keeper.path("Id").asText();
+                        // 创建一个新的对象
+                        ObjectNode newTarget = objectMapper.createObjectNode();
+                        newTarget.put("Id", req.getCard_id());
+                        newTarget.put("rolecard", cardDao.getRoleCardByID(Long.parseLong(req.getCard_id())));
+
+                        // 如果找到匹配的元素，则将其替换为新对象
+                        if (req.getCard_id().equals(id)) {
+                            target_objects.set(i, newTarget);
+                            break;
+                        }
+                    }
+                    // 将修改后的数据转换回 JSON 字符串
+                    String updatedData = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+                    info.setBody_info(updatedData);
+                    redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
+                    break;
+                default:
+                    break;
 
             }
         }
+
+        long now = System.currentTimeMillis()/1000;
+        info.setEdit_time(now);
+        roomDao.update(info);
+        return CommonResponse.success(new RoomCardUpdateRes(true));
     }
 
     public RoomInfoRes getRoomInfo(IndexBody body) throws JsonProcessingException {
