@@ -253,6 +253,9 @@ public class RoomService {
                     target_users.add(targetObject);
 
                     // 将修改后的数据转换回 JSON 字符串
+                    ArrayNode gamers = (ArrayNode) data.path("g_gamers").path("g_players");
+                    ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
+                    info.setPl_cur(gamers.size());
                     String updated = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
                     info.setBody_info(updated);
                     redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
@@ -270,6 +273,9 @@ public class RoomService {
                             break;
                         }
                     }
+                    gamers = (ArrayNode) data.path("g_gamers").path("g_players");
+                    ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
+                    info.setPl_cur(gamers.size());
                     break;
                 case "change":
                     ArrayNode target_objects = (ArrayNode) data.path("g_gamers").path(target.getTarget());
@@ -289,6 +295,9 @@ public class RoomService {
                         }
                     }
                     // 将修改后的数据转换回 JSON 字符串
+                    gamers = (ArrayNode) data.path("g_gamers").path("g_players");
+                    ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
+                    info.setPl_cur(gamers.size());
                     String updatedData = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
                     info.setBody_info(updatedData);
                     redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
@@ -298,6 +307,10 @@ public class RoomService {
 
             }
         }
+
+//        ArrayNode target_gamers = (ArrayNode) data.path("g_gamers").path("g_players");
+//        ((ObjectNode) data.get("r_info")).put("pl_cur", target_gamers.size());
+//        info.setPl_cur(target_gamers.size());
 
         long now = System.currentTimeMillis()/1000;
         info.setEdit_time(now);
