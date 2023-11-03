@@ -1,7 +1,10 @@
 package com.sparkfire.squirmulu.controller;
 
+import com.sparkfire.squirmulu.dao.ImgDao;
+import com.sparkfire.squirmulu.entity.Img;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,19 +19,27 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/squ/game")
+@RequestMapping("/squ/other/img/")
 public class FileUploadController {
 
     @Value("${img.path}")
     private String path;
 
+    @Value("${http.path}")
+    private String httpPath;
+
+    @Autowired
+    private ImgDao imgDao;
+
     @PostMapping("/upload_img")
-    public CommonResponse<String> uploadImage(@RequestParam("file") MultipartFile file) {
+    public CommonResponse<String> uploadImage(@RequestParam("file") MultipartFile file, @RequestParam("userID") long userID, @RequestParam("type") int type) {
         // 检查文件是否为空
         if (file.isEmpty()) {
-            return CommonResponse.error(HttpStatus.BAD_REQUEST.value(),"File is empty");
+            return CommonResponse.error(HttpStatus.BAD_REQUEST.value(), "File is empty");
         }
 
         // 指定保存文件的目录
@@ -46,10 +57,14 @@ public class FileUploadController {
             Path filePath = Paths.get(uploadDir, randomFilename);
             file.transferTo(filePath.toFile());
 
-            return CommonResponse.success(randomFilename);
+            //保存到dao
+            long now = System.currentTimeMillis()/1000;
+            imgDao.insert(new Img(randomFilename,userID,now,now,type));
+
+            return CommonResponse.success(httpPath+randomFilename);
         } catch (IOException e) {
             e.printStackTrace();
-            return CommonResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Failed to upload file");
+            return CommonResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to upload file");
         }
     }
 }

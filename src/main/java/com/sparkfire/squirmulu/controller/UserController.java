@@ -3,7 +3,9 @@ package com.sparkfire.squirmulu.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparkfire.squirmulu.common.Result;
+import com.sparkfire.squirmulu.dao.ImgDao;
 import com.sparkfire.squirmulu.entity.IndexBody;
+import com.sparkfire.squirmulu.entity.request.MyImgReq;
 import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
 import com.sparkfire.squirmulu.entity.request.MyRoomListReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
@@ -14,9 +16,12 @@ import com.sparkfire.squirmulu.service.SysUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Api(tags = "用户信息")
 @RestController
@@ -31,6 +36,12 @@ public class UserController {
 
     @Autowired
     private RoomService roomService;
+
+    @Autowired
+    private ImgDao imgDao;
+
+    @Value("${http.path}")
+    private String httpPath;
 
     /**
      * 用户登录
@@ -88,6 +99,11 @@ public class UserController {
     @RequestMapping("/user-room/pull-room-list")
     public CommonResponse my_room_list(@RequestBody MyRoomListReq req) throws JsonProcessingException {
         return roomService.myRoomList(req);
+    }
+
+    @PostMapping("/owned/pull-img-list")
+    public CommonResponse<List<String>> uploadImage(@RequestBody() MyImgReq req) {
+        return CommonResponse.success(imgDao.getByIDAndType(req.getUserID(),req.getType()).stream().map(file-> httpPath+file).collect(Collectors.toList()));
     }
 
 }

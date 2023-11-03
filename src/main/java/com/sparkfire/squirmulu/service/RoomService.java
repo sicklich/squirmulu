@@ -142,7 +142,12 @@ public class RoomService {
             "      \"intro\": \"\"" +
             "    }," +
             "    \"expo_scene_cur\": 0," +
-            "    \"expo_scene\": []" +
+            "    \"expo_scene\": [        " +
+            "        name: \"\", // 场景名字 - String\n" +
+            "        img: \"\", // 场景图片 - String 图片URL\n" +
+            "        bgm: \"\", // 场景背景音乐 - String 音乐文件URL\n" +
+            "        des: \"\", // 场景描述 - String 用户自定义长字符串\n" +
+            "        vis: true, // 场景是否公开可见 - Boolean 具体使用情况的鉴权由前端处理逻辑]" +
             "  }," +
             "  \"g_gamers\": {" +
             "    \"g_keepers\": []," +
@@ -318,19 +323,19 @@ public class RoomService {
         return CommonResponse.success(new RoomCardUpdateRes(true));
     }
 
-    public RoomInfoRes getRoomInfo(IndexBody body) throws JsonProcessingException {
+    public RoomInfoResIDString getRoomInfo(IndexBody body) throws JsonProcessingException {
         String key = RedisClient.room_list;
         RoomInfo info = redisClient.getObjectById(key, String.valueOf(body.getId()), RoomInfo.class);
         List<GameInfoElement> elements = new ArrayList<>();
         if (body.getTargets().isEmpty()) {
             elements.add(new GameInfoElement("game_room", info.getBody_info()));
-            return new RoomInfoRes(body.getId(), getAuthRole(info.getBody_info(), body.getUser_id()), elements);
+            return new RoomInfoResIDString(body.getId()+"", getAuthRole(info.getBody_info(), body.getUser_id()), elements);
         }
         for (IndexTarget target : body.getTargets()) {
             String gameInfo = JsonUtil.getByIndexTarget(info.getBody_info(), target);
             elements.add(new GameInfoElement(target.getTarget(), gameInfo));
         }
-        return new RoomInfoRes(body.getId(), getAuthRole(info.getBody_info(), body.getUser_id()), elements);
+        return new RoomInfoResIDString(body.getId()+"", getAuthRole(info.getBody_info(), body.getUser_id()), elements);
     }
 
     public List<ChatSendToAll> getChatList(ChatListReq req) {
