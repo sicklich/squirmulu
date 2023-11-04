@@ -49,7 +49,7 @@ public class RoomService {
             "  \"kp_id\": \"\"," +
             "  \"r_info\": {" +
             "    \"r_img\": \"\"," +
-            "    \"r_name\": \"测试搜索1\"," +
+            "    \"r_name\": \"\"," +
             "    \"kp_name\": \"\"," +
             "    \"c_time\": \"\"," +
             "    \"g_time\": \"\"," +
@@ -142,12 +142,15 @@ public class RoomService {
             "      \"intro\": \"\"" +
             "    }," +
             "    \"expo_scene_cur\": 0," +
-            "    \"expo_scene\": [        " +
-            "        name: \"\", // 场景名字 - String\n" +
-            "        img: \"\", // 场景图片 - String 图片URL\n" +
-            "        bgm: \"\", // 场景背景音乐 - String 音乐文件URL\n" +
-            "        des: \"\", // 场景描述 - String 用户自定义长字符串\n" +
-            "        vis: true, // 场景是否公开可见 - Boolean 具体使用情况的鉴权由前端处理逻辑]" +
+            "    \"expo_scene\": [" +
+            "          {" +
+            "                \"name\": \"\", " +
+            "                \"img\": \"\", " +
+            "                \"bgm\": \"\", " +
+            "                \"des\": \"\", " +
+            "                \"vis\": true  " +
+            "          }" +
+            "     ]" +
             "  }," +
             "  \"g_gamers\": {" +
             "    \"g_keepers\": []," +
@@ -177,7 +180,17 @@ public class RoomService {
         info.setId(String.valueOf(id));
         info.setCreate_time(now);
         info.setEdit_time(now);
-        info.setBody_info(body_info);
+        JsonNode node = null;
+        String updatedData = "";
+        try {
+            node = objectMapper.readTree(body_info);
+            ObjectNode objectNode = (ObjectNode) node;
+            objectNode.put("kp_id", info.getKp_id());
+            updatedData = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        info.setBody_info(updatedData);
         processBaseInfo(info);
 //        RoomESInfo esInfo = new RoomESInfo();
 //        esInfo.setId(info.getId());
@@ -204,10 +217,10 @@ public class RoomService {
             ((ObjectNode) node).put("id", String.valueOf(info.getId()));
             info.setPwd(node.get("r_setting").get("r_rule").get("r_acc").get("password").asText());
             ((ObjectNode) node.get("r_setting").get("r_rule").get("r_acc")).put("account", String.valueOf(info.getId()));
-            ArrayNode arrayNode = (ArrayNode) node.get("g_gamers").get("g_keepers");
-            ObjectNode objectNode = objectMapper.createObjectNode();
-            objectNode.put("id", info.getKp_id());
-            arrayNode.add(objectNode);
+//            ArrayNode arrayNode = (ArrayNode) node.get("g_gamers").get("g_keepers");
+//            ObjectNode objectNode = objectMapper.createObjectNode();
+//            objectNode.put("id", info.getKp_id());
+//            arrayNode.add(objectNode);
             info.setPl_cur(node.get("r_info").get("pl_cur").asInt());
             info.setPl_cur(node.get("r_info").get("pl_max").asInt());
             info.setR_name(node.get("r_info").get("r_name").asText());
@@ -236,12 +249,12 @@ public class RoomService {
         // 解析 JSON 字符串
         JsonNode data = objectMapper.readTree(info.getBody_info());
 
-        for(RoomCardUpdateTarget target:req.getTargets()){
-            switch (target.getMode()){
+        for (RoomCardUpdateTarget target : req.getTargets()) {
+            switch (target.getMode()) {
                 case "keep":
                     ArrayNode gKeepers = (ArrayNode) data.path("g_gamers").path("g_keepers");
                     ObjectNode newObject = objectMapper.createObjectNode();
-                    newObject.put("Id", req.getCard_id());
+                    newObject.put("id", req.getCard_id());
                     newObject.put("rolecard", cardDao.getRoleCardByID(Long.parseLong(req.getCard_id())));
                     gKeepers.add(newObject);
 
@@ -253,7 +266,7 @@ public class RoomService {
                 case "join":
                     ArrayNode target_users = (ArrayNode) data.path("g_gamers").path(target.getTarget());
                     ObjectNode targetObject = objectMapper.createObjectNode();
-                    targetObject.put("Id", req.getCard_id());
+                    targetObject.put("id", req.getCard_id());
                     targetObject.put("rolecard", cardDao.getRoleCardByID(Long.parseLong(req.getCard_id())));
                     target_users.add(targetObject);
 
@@ -270,7 +283,7 @@ public class RoomService {
                     // 遍历 g_keepers 数组并检查每个元素的 Id 值
                     for (int i = 0; i < target_gamers.size(); i++) {
                         JsonNode keeper = target_gamers.get(i);
-                        String id = keeper.path("Id").asText();
+                        String id = keeper.path("id").asText();
 
                         // 如果找到匹配的元素，则将其删除
                         if (req.getCard_id().equals(id)) {
@@ -287,10 +300,10 @@ public class RoomService {
                     // 遍历 g_keepers 数组并检查每个元素的 Id 值
                     for (int i = 0; i < target_objects.size(); i++) {
                         JsonNode keeper = target_objects.get(i);
-                        String id = keeper.path("Id").asText();
+                        String id = keeper.path("id").asText();
                         // 创建一个新的对象
                         ObjectNode newTarget = objectMapper.createObjectNode();
-                        newTarget.put("Id", req.getCard_id());
+                        newTarget.put("id", req.getCard_id());
                         newTarget.put("rolecard", cardDao.getRoleCardByID(Long.parseLong(req.getCard_id())));
 
                         // 如果找到匹配的元素，则将其替换为新对象
@@ -317,7 +330,7 @@ public class RoomService {
 //        ((ObjectNode) data.get("r_info")).put("pl_cur", target_gamers.size());
 //        info.setPl_cur(target_gamers.size());
 
-        long now = System.currentTimeMillis()/1000;
+        long now = System.currentTimeMillis() / 1000;
         info.setEdit_time(now);
         roomDao.update(info);
         return CommonResponse.success(new RoomCardUpdateRes(true));
@@ -329,13 +342,13 @@ public class RoomService {
         List<GameInfoElement> elements = new ArrayList<>();
         if (body.getTargets().isEmpty()) {
             elements.add(new GameInfoElement("game_room", info.getBody_info()));
-            return new RoomInfoResIDString(body.getId()+"", getAuthRole(info.getBody_info(), body.getUser_id()), elements);
+            return new RoomInfoResIDString(body.getId() + "", getAuthRole(info.getBody_info(), body.getUser_id()), elements);
         }
         for (IndexTarget target : body.getTargets()) {
             String gameInfo = JsonUtil.getByIndexTarget(info.getBody_info(), target);
             elements.add(new GameInfoElement(target.getTarget(), gameInfo));
         }
-        return new RoomInfoResIDString(body.getId()+"", getAuthRole(info.getBody_info(), body.getUser_id()), elements);
+        return new RoomInfoResIDString(body.getId() + "", getAuthRole(info.getBody_info(), body.getUser_id()), elements);
     }
 
     public List<ChatSendToAll> getChatList(ChatListReq req) {
@@ -378,7 +391,7 @@ public class RoomService {
         roomInfo.setBody_info(edited);
         processBaseInfo(roomInfo);
         redisClient.addObject(key, String.valueOf(roomInfo.getId()), roomInfo);
-        long now = System.currentTimeMillis()/1000;
+        long now = System.currentTimeMillis() / 1000;
         roomInfo.setEdit_time(now);
         roomDao.update(roomInfo);
         return new CommonGameRes(String.valueOf(roomInfo.getId()));
@@ -423,24 +436,9 @@ public class RoomService {
     }
 
     public CommonResponse myRoomList(MyRoomListReq req) {
-        String key = "";
-        switch (req.getType()) {
-            case "created":
-                key = "g_keepers";
-                break;
-            case "join":
-                key = "g_players";
-                break;
-            case "onlook":
-                key = "g_audiences";
-                break;
-            default:
-                throw new ServiceException("不支持的查询类型");
-        }
-        String finalKey = key;
         List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class));
         list = list.stream()
-                .filter(room -> roomForSomeone(room.getBody_info(), req.getId(), finalKey))
+                .filter(room -> roomForSomeone(room.getBody_info(), req.getId(), req.getType()))
                 .map(room ->
                 {
                     String bodyinfo = room.getBody_info();
@@ -462,12 +460,26 @@ public class RoomService {
 
     }
 
-    boolean roomForSomeone(String body_info, long id, String key) {
+    boolean roomForSomeone(String body_info, long id, String type) {
         JsonNode node = null;
         try {
             node = objectMapper.readTree(body_info);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+        if (type.equals("created")) {
+            return node.get("kp_id").asLong() == id;
+        }
+        String key = "";
+        switch (type) {
+            case "join":
+                key = "g_players";
+                break;
+            case "onlook":
+                key = "g_audiences";
+                break;
+            default:
+                throw new ServiceException("不支持的查询类型");
         }
         ArrayNode arrayNode = (ArrayNode) node.get("g_gamers").get(key);
         // 使用 elements() 方法获取迭代器
@@ -476,7 +488,7 @@ public class RoomService {
         // 遍历迭代器以访问数组中的每个元素
         while (iterator.hasNext()) {
             JsonNode element = iterator.next();
-            if (element.get("id").asLong() == id) return true;
+            if (element.get("rolecard").get("a_setting").get("card_user").asLong() == id) return true;
         }
         return false;
     }
