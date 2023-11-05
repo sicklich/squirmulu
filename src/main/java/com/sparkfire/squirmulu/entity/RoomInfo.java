@@ -11,6 +11,7 @@ public class RoomInfo {
     private long g_time;
     private String body_info;
     private long kp_id;
+    private String kp_name;
     private long create_time;
     private long publish_time;
     protected long edit_time;
@@ -19,7 +20,7 @@ public class RoomInfo {
 
     private String r_tags;
 
-    public RoomInfo(String id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags) {
+    public RoomInfo(String id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, String kp_name, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags) {
         this.id = id;
         this.status = status;
         this.pl_cur = pl_cur;
@@ -28,6 +29,7 @@ public class RoomInfo {
         this.g_time = g_time;
         this.body_info = body_info;
         this.kp_id = kp_id;
+        this.kp_name = kp_name;
         this.create_time = create_time;
         this.publish_time = publish_time;
         this.edit_time = edit_time;
@@ -61,6 +63,14 @@ public class RoomInfo {
     }
 
     public RoomInfo() {
+    }
+
+    public String getKp_name() {
+        return kp_name;
+    }
+
+    public void setKp_name(String kp_name) {
+        this.kp_name = kp_name;
     }
 
     public long getPublish_time() {

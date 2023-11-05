@@ -59,7 +59,7 @@ public class RoomService {
             "    \"r_tags\": [" +
             "      \"COC7th\"" +
             "    ]," +
-            "    \"r_des\": \"测试描述\"" +
+            "    \"r_des\": \"\"" +
             "  }," +
             "  \"g_setting\": {" +
             "    \"g_type\": \"COC\"," +
@@ -186,7 +186,9 @@ public class RoomService {
             node = objectMapper.readTree(body_info);
             ObjectNode objectNode = (ObjectNode) node;
             objectNode.put("kp_id", info.getKp_id());
-            updatedData = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
+            ObjectNode r_info = (ObjectNode) objectNode.get("r_info");
+            r_info.put("kp_name", info.getKp_name());
+            updatedData = objectMapper.writeValueAsString(node);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -255,7 +257,7 @@ public class RoomService {
                     ArrayNode gKeepers = (ArrayNode) data.path("g_gamers").path("g_keepers");
                     ObjectNode newObject = objectMapper.createObjectNode();
                     newObject.put("id", req.getCard_id());
-                    newObject.put("rolecard", cardDao.getRoleCardByID(Long.parseLong(req.getCard_id())));
+                    newObject.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
                     gKeepers.add(newObject);
 
                     // 将修改后的数据转换回 JSON 字符串
@@ -267,7 +269,7 @@ public class RoomService {
                     ArrayNode target_users = (ArrayNode) data.path("g_gamers").path(target.getTarget());
                     ObjectNode targetObject = objectMapper.createObjectNode();
                     targetObject.put("id", req.getCard_id());
-                    targetObject.put("rolecard", cardDao.getRoleCardByID(Long.parseLong(req.getCard_id())));
+                    targetObject.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
                     target_users.add(targetObject);
 
                     // 将修改后的数据转换回 JSON 字符串
@@ -304,7 +306,7 @@ public class RoomService {
                         // 创建一个新的对象
                         ObjectNode newTarget = objectMapper.createObjectNode();
                         newTarget.put("id", req.getCard_id());
-                        newTarget.put("rolecard", cardDao.getRoleCardByID(Long.parseLong(req.getCard_id())));
+                        newTarget.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
 
                         // 如果找到匹配的元素，则将其替换为新对象
                         if (req.getCard_id().equals(id)) {

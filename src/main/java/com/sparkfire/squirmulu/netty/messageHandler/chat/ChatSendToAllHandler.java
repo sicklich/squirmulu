@@ -54,7 +54,7 @@ public class ChatSendToAllHandler implements MessageHandler<ChatSendToAll> {
         List<Channel> channels = nettyChannelManager.getRoomChannel(message.getRoom_id());
         for(Channel userChannel : channels){
             try {
-                System.out.println(userChannel.id());
+                System.out.println("chat_to_all"+userChannel.id());
                 userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(message)));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);

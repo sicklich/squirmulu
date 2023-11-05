@@ -53,8 +53,8 @@ public class CardService {
         card.setC_time(now);
         card.setM_time(now);
         ObjectNode cardJson = (ObjectNode) objectMapper.readTree(card.getRole_card());
-        cardJson.put("id", id);
-        card.setRole_card(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(cardJson));
+        cardJson.put("id", id+"");
+        card.setRole_card(objectMapper.writeValueAsString(cardJson));
         cardDao.insert(card);
         return new CommonGameRes(String.valueOf(id));
 //        roomDao.insert(info);
