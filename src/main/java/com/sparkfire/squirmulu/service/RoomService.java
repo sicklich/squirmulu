@@ -158,9 +158,21 @@ public class RoomService {
             "    \"g_audiences\": []" +
             "  }," +
             "  \"g_record\": {" +
+            "  \"channel\": [" +
+            "           {" +
+            "               \"tips\": \"主频道\"," +
+            "               \"vis_list\": []" +
+            "           }" +
+            "   ]," +
             "    \"record_list\": []" +
             "  }," +
             "  \"g_chat\": {" +
+            "  \"channel\": [" +
+            "           {" +
+            "               \"tips\": \"主频道\"," +
+            "               \"vis_list\": []" +
+            "           }" +
+            "   ]," +
             "    \"record_list\": []" +
             "  }," +
             "  \"g_clue\": {" +

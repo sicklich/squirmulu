@@ -25,6 +25,8 @@ public class RecordSendToAllRequest implements Message {
     private long user_id;
     private int c_type;
 
+    private int chat_type;
+
 
     public String getId() {
         return id;
@@ -88,5 +90,13 @@ public class RecordSendToAllRequest implements Message {
 
     public void setC_type(int c_type) {
         this.c_type = c_type;
+    }
+
+    public int getChat_type() {
+        return chat_type;
+    }
+
+    public void setChat_type(int chat_type) {
+        this.chat_type = chat_type;
     }
 }
