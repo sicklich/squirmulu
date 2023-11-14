@@ -268,7 +268,7 @@ public class RoomService {
                 case "keep":
                     ArrayNode gKeepers = (ArrayNode) data.path("g_gamers").path("g_keepers");
                     ObjectNode newObject = objectMapper.createObjectNode();
-                    newObject.put("id", req.getCard_id());
+                    newObject.put("id", req.getUser_id());
                     newObject.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
                     gKeepers.add(newObject);
 
@@ -280,7 +280,7 @@ public class RoomService {
                 case "join":
                     ArrayNode target_users = (ArrayNode) data.path("g_gamers").path(target.getTarget());
                     ObjectNode targetObject = objectMapper.createObjectNode();
-                    targetObject.put("id", req.getCard_id());
+                    targetObject.put("id", req.getUser_id());
                     targetObject.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
                     target_users.add(targetObject);
 
@@ -300,7 +300,7 @@ public class RoomService {
                         String id = keeper.path("id").asText();
 
                         // 如果找到匹配的元素，则将其删除
-                        if (req.getCard_id().equals(id)) {
+                        if (req.getUser_id().equals(id)) {
                             target_gamers.remove(i);
                             break;
                         }
@@ -317,11 +317,11 @@ public class RoomService {
                         String id = keeper.path("id").asText();
                         // 创建一个新的对象
                         ObjectNode newTarget = objectMapper.createObjectNode();
-                        newTarget.put("id", req.getCard_id());
+                        newTarget.put("id", req.getUser_id());
                         newTarget.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
 
                         // 如果找到匹配的元素，则将其替换为新对象
-                        if (req.getCard_id().equals(id)) {
+                        if (req.getUser_id().equals(id)) {
                             target_objects.set(i, newTarget);
                             break;
                         }
@@ -428,6 +428,8 @@ public class RoomService {
                             , RoomInfo.class).stream()
 //                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
+                    .skip((long) (req.getPage_size() - 1) *req.getPage_size())
+                    .limit(req.getPage_size())
                     .collect(Collectors.toList()));
         } catch (Exception e) {
             return new RoomListRes(new ArrayList<>());
@@ -468,6 +470,7 @@ public class RoomService {
                         throw new RuntimeException(e);
                     }
                 })
+                .sorted(Comparator.comparing(RoomInfo::getEdit_time))
                 .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
 
         return CommonResponse.success(list);

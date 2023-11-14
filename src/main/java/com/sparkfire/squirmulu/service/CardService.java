@@ -20,6 +20,7 @@ import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,6 +120,8 @@ public class CardService {
                         throw new RuntimeException(e);
                     }
                 })
+                //按时间排序
+                .sorted(Comparator.comparing(PlayerCardIDString::getM_time).reversed())
                 .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
 
 

@@ -118,7 +118,7 @@ public class FileUploadController {
             String fileName7 = imgService.uploadImg(file7, path, userID, type, httpPath);
             if (!fileName7.equals("")) fileNames.add(fileName7);
             String fileName8 = imgService.uploadImg(file8, path, userID, type, httpPath);
-            if (!fileName8.equals("")) fileNames.add(fileName8);u
+            if (!fileName8.equals("")) fileNames.add(fileName8);
 
             return CommonResponse.success(fileNames);
         } catch (IOException e) {
