@@ -36,6 +36,9 @@ public class NettyChannelManager {
      */
     private ConcurrentMap<String, Channel> userChannels = new ConcurrentHashMap<>();
 
+    //缓存起来
+    private ConcurrentMap<String, Channel> userChannelsTmp = new ConcurrentHashMap<>();
+
     private ConcurrentMap<Long, List<Channel>> roomChannels = new ConcurrentHashMap<>();
     private ConcurrentMap<Long, Long> userRooms = new ConcurrentHashMap<>();
 
@@ -79,6 +82,26 @@ public class NettyChannelManager {
         channel.attr(CHANNEL_ATTR_KEY_USER).set(user);
         // 添加到 userChannels
         userChannels.put(user, channel);
+    }
+
+    public void addUserTmp(Channel channel, String user) {
+        Channel existChannel = channels.get(channel.id());
+        if (existChannel == null) {
+            logger.error("[addUser][连接({}) 不存在]", channel.id());
+            return;
+        }
+        // 设置属性
+        channel.attr(CHANNEL_ATTR_KEY_USER).set(user);
+        // 添加到 userChannels
+        userChannelsTmp.put(user, channel);
+    }
+
+    public Channel getTmpUser(String user) {
+        return userChannelsTmp.get(user);
+    }
+
+    public Channel getUser(String user) {
+        return userChannels.get(user);
     }
 
     /**

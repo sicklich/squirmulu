@@ -19,8 +19,9 @@ public class RoomInfo {
     private String r_des;
 
     private String r_tags;
+    private boolean approve_required;
 
-    public RoomInfo(String id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, String kp_name, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags) {
+    public RoomInfo(String id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, String kp_name, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags, boolean approve_required) {
         this.id = id;
         this.status = status;
         this.pl_cur = pl_cur;
@@ -36,6 +37,15 @@ public class RoomInfo {
         this.r_name = r_name;
         this.r_des = r_des;
         this.r_tags = r_tags;
+        this.approve_required = approve_required;
+    }
+
+    public boolean isApprove_required() {
+        return approve_required;
+    }
+
+    public void setApprove_required(boolean approve_required) {
+        this.approve_required = approve_required;
     }
 
     public String getR_tags() {

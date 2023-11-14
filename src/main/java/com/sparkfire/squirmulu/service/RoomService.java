@@ -230,6 +230,7 @@ public class RoomService {
             info.setG_time(node.get("r_info").get("g_time").asLong());
             ((ObjectNode) node).put("id", String.valueOf(info.getId()));
             info.setPwd(node.get("r_setting").get("r_rule").get("r_acc").get("password").asText());
+            info.setApprove_required(node.get("r_setting").get("r_rule").get("r_acc").get("approve_required").asBoolean());
             ((ObjectNode) node.get("r_setting").get("r_rule").get("r_acc")).put("account", String.valueOf(info.getId()));
 //            ArrayNode arrayNode = (ArrayNode) node.get("g_gamers").get("g_keepers");
 //            ObjectNode objectNode = objectMapper.createObjectNode();
@@ -428,7 +429,7 @@ public class RoomService {
                             , RoomInfo.class).stream()
 //                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
-                    .skip((long) (req.getPage_size() - 1) *req.getPage_size())
+                    .skip((long) (req.getPage_size() - 1) * req.getPage_size())
                     .limit(req.getPage_size())
                     .collect(Collectors.toList()));
         } catch (Exception e) {
@@ -474,6 +475,39 @@ public class RoomService {
                 .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
 
         return CommonResponse.success(list);
+
+    }
+
+    public boolean needApproved(String roomId) {
+        RoomInfo room = redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class);
+        return room.isApprove_required();
+    }
+
+    public RoomInfo getRoomInfo(String roomId) {
+        return redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class);
+    }
+
+    public boolean userInRoom(String roomId, String userId) {
+        RoomInfo room = redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class);
+        try {
+            JsonNode node = objectMapper.readTree(room.getBody_info());
+            ArrayNode keepers = (ArrayNode) (node.get("g_keepers"));
+            ArrayNode players = (ArrayNode) (node.get("g_players"));
+            ArrayNode audiences = (ArrayNode) (node.get("g_audiences"));
+            ArrayNode combinedArray = objectMapper.createArrayNode();
+            combinedArray.addAll(keepers);
+            combinedArray.addAll(players);
+            combinedArray.addAll(audiences);
+
+            for (JsonNode element : combinedArray) {
+                if (element.get("id").asText().equals(userId)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

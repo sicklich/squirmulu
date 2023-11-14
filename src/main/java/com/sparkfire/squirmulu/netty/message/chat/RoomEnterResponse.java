@@ -10,7 +10,7 @@ public class RoomEnterResponse implements Message {
 
     public static final String TYPE = "ROOM_ENTER_RESPONSE";
     /**
-     * 响应状态码
+     * 响应状态码 0 正常 1 已经在房间中 2 需要同意 -1 房间不存在
      */
     private Integer code;
     /**
