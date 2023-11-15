@@ -57,3 +57,5 @@ security:
       - /swagger-resources/**
       - /v2/api-docs/**
       - /swagger-ui/**
+      - /**.jpg
+      - /**.png
