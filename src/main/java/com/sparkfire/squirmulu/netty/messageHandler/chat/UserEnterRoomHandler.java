@@ -41,7 +41,13 @@ public class UserEnterRoomHandler implements MessageHandler<UserEnterRoomRequest
             RoomInfo room = roomService.getRoomInfo(message.getRoom_id() + "");
             if (roomService.userInRoom(message.getRoom_id() + "", message.getUser_id() + "")) {
                 sendResponse = sendResponse.setCode(1);
-            } else if (room.isApprove_required()) {
+                //已经在房间也要加入
+                channelManager.enterRoom(channel, message.getRoom_id(), message.getUser_id());
+            } else if(room.getKp_id() == message.getUser_id() ){
+                //如果是房主直接进房
+                channelManager.enterRoom(channel, message.getRoom_id(), message.getUser_id());
+                sendResponse = sendResponse.setCode(0);
+            }else if (room.isApprove_required()) {
                 //给房主发消息
                 long kpId = room.getKp_id();
                 Channel kpChannel = channelManager.getUser(kpId + "");

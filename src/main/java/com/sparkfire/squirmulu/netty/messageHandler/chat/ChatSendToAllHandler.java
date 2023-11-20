@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class ChatSendToAllHandler implements MessageHandler<ChatSendToAll> {
@@ -51,7 +52,7 @@ public class ChatSendToAllHandler implements MessageHandler<ChatSendToAll> {
         redisClient.zAdd(key,message,message.getP_time(), ChatSendToAll.class);
 
         // 创建转发的消息，并广播发送
-        List<Channel> channels = nettyChannelManager.getRoomChannel(message.getRoom_id());
+        Set<Channel> channels = nettyChannelManager.getRoomChannel(message.getRoom_id());
         for(Channel userChannel : channels){
             try {
                 System.out.println("chat_to_all"+userChannel.id());

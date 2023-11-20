@@ -8,7 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -39,7 +41,7 @@ public class NettyChannelManager {
     //缓存起来
     private ConcurrentMap<String, Channel> userChannelsTmp = new ConcurrentHashMap<>();
 
-    private ConcurrentMap<Long, List<Channel>> roomChannels = new ConcurrentHashMap<>();
+    private ConcurrentMap<Long, Set<Channel>> roomChannels = new ConcurrentHashMap<>();
     private ConcurrentMap<Long, Long> userRooms = new ConcurrentHashMap<>();
 
     /**
@@ -56,14 +58,14 @@ public class NettyChannelManager {
         userRooms.put(userID, roomID);
         channel.attr(CHANNEL_ATTR_KEY_ROOM).set(roomID);
         channel.attr(CHANNEL_ATTR_KEY_USER_ID).set(userID);
-        List<Channel> channels = roomChannels.getOrDefault(roomID,new ArrayList<>());
+        Set<Channel> channels = roomChannels.getOrDefault(roomID, new HashSet<>() {});
         channels.add(channel);
         roomChannels.put(roomID,channels);
         logger.info("[add][一个连接({})加入房间,用户{},房间{}]", channel.id(), userID, roomID);
     }
 
-    public List<Channel> getRoomChannel(long roomID){
-        return roomChannels.getOrDefault(roomID,new ArrayList<>());
+    public Set<Channel> getRoomChannel(long roomID){
+        return roomChannels.getOrDefault(roomID,new HashSet<>());
     }
 
     /**

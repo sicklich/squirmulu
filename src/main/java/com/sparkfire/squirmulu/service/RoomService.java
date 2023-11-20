@@ -180,7 +180,8 @@ public class RoomService {
             "      {" +
             "        \"c_a_name\": \"\"," +
             "        \"c_content\": \"\"," +
-            "        \"vis_status\": false" +
+            "        \"vis_status\": false," +
+            "        \"vis_avatar\": []" +
             "      }" +
             "    ]" +
             "  }" +
@@ -490,7 +491,7 @@ public class RoomService {
     public boolean userInRoom(String roomId, String userId) {
         RoomInfo room = redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class);
         try {
-            JsonNode node = objectMapper.readTree(room.getBody_info());
+            JsonNode node = objectMapper.readTree(room.getBody_info()).get("g_gamers");
             ArrayNode keepers = (ArrayNode) (node.get("g_keepers"));
             ArrayNode players = (ArrayNode) (node.get("g_players"));
             ArrayNode audiences = (ArrayNode) (node.get("g_audiences"));
