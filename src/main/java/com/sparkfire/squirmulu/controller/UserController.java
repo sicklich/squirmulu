@@ -4,8 +4,11 @@ package com.sparkfire.squirmulu.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparkfire.squirmulu.common.Result;
 import com.sparkfire.squirmulu.dao.ImgDao;
+import com.sparkfire.squirmulu.dao.MessageDao;
 import com.sparkfire.squirmulu.entity.IndexBody;
+import com.sparkfire.squirmulu.entity.MessageDB;
 import com.sparkfire.squirmulu.entity.request.MyImgReq;
+import com.sparkfire.squirmulu.entity.request.MyMsgReq;
 import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
 import com.sparkfire.squirmulu.entity.request.MyRoomListReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
@@ -42,6 +45,9 @@ public class UserController {
 
     @Value("${http.path}")
     private String httpPath;
+
+    @Autowired
+    private MessageDao messageDao;
 
     /**
      * 用户登录
@@ -104,6 +110,11 @@ public class UserController {
     @PostMapping("/owned/pull-img-list")
     public CommonResponse<List<String>> uploadImage(@RequestBody() MyImgReq req) {
         return CommonResponse.success(imgDao.getByIDAndType(req.getUserID(),req.getType()).stream().map(file-> httpPath+file).collect(Collectors.toList()));
+    }
+
+    @PostMapping("/user-msg/pull-history-msg")
+    public CommonResponse<List<MessageDB>> pullHistoryMessage(@RequestBody() MyMsgReq req) {
+        return CommonResponse.success(messageDao.getByPage(req.getUser_id(),req.getType(), (req.getPage_cur()-1)* req.getPage_size(), req.getPage_size()));
     }
 
 }

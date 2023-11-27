@@ -21,6 +21,8 @@ import com.sparkfire.squirmulu.netty.messageHandler.chat.ChatSendToAllHandler;
 import com.sparkfire.squirmulu.util.JsonUtil;
 import com.sparkfire.squirmulu.util.RedisClient;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class RoomService {
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     RoomDao roomDao;
 
@@ -241,6 +245,10 @@ public class RoomService {
             info.setPl_cur(node.get("r_info").get("pl_max").asInt());
             info.setR_name(node.get("r_info").get("r_name").asText());
             info.setR_des(node.get("r_info").get("r_des").asText());
+            long kpId = node.get("kp_id").asLong();
+            if(kpId != 0) {
+                info.setKp_id(node.get("kp_id").asLong());
+            }
             info.setR_tags(objectMapper.writeValueAsString(node.get("r_info").get("r_tags")));
             info.setBody_info(node.toString());
         } catch (JsonProcessingException e) {
@@ -401,16 +409,19 @@ public class RoomService {
 
     public CommonGameRes publish(RoomInfo roomInfo) throws JsonProcessingException {
         String key = RedisClient.room_list;
-        roomInfo.setStatus(RoomStatus.RECRUITING.getStatusValue());
-        String edited = JsonUtil.updateKeyForJsonBody(roomInfo.getBody_info(), List.of(new IndexTarget("r_state", 2
+        RoomInfo room = redisClient.getObjectById(RedisClient.room_list, roomInfo.getId(), RoomInfo.class);
+        room.setStatus(RoomStatus.RECRUITING.getStatusValue());
+        logger.info("publish body{}, room id{}, status{}",room.getBody_info(), room.getId(), room.getStatus());
+        String edited = JsonUtil.updateKeyForJsonBody(room.getBody_info(), List.of(new IndexTarget("r_state", 2
                 , List.of("r_info"), String.valueOf(RoomStatus.RECRUITING.getStatusValue()))));
-        roomInfo.setBody_info(edited);
-        processBaseInfo(roomInfo);
-        redisClient.addObject(key, String.valueOf(roomInfo.getId()), roomInfo);
+        room.setBody_info(edited);
+        processBaseInfo(room);
+        redisClient.addObject(key, String.valueOf(room.getId()), room);
+        logger.info("publish body{}, room id{}, status{}",room.getBody_info(), room.getId(), room.getStatus());
         long now = System.currentTimeMillis() / 1000;
-        roomInfo.setEdit_time(now);
-        roomDao.update(roomInfo);
-        return new CommonGameRes(String.valueOf(roomInfo.getId()));
+        room.setEdit_time(now);
+        roomDao.update(room);
+        return new CommonGameRes(String.valueOf(room.getId()));
     }
 
     public RoomListRes searchRoomList(RoomSearchListReq req) {
@@ -443,6 +454,7 @@ public class RoomService {
         //redis 获取 排序
         try {
             return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class).stream()
+                    .peek(roomInfo -> logger.info("room id{}, status{}", roomInfo.getId(), roomInfo.getStatus()))
                     .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .sorted(condition.getRoomConditionComparator())
                     .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))

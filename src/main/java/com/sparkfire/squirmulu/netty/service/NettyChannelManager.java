@@ -61,6 +61,7 @@ public class NettyChannelManager {
         Set<Channel> channels = roomChannels.getOrDefault(roomID, new HashSet<>() {});
         channels.add(channel);
         roomChannels.put(roomID,channels);
+        addUser(channel, userID+"");
         logger.info("[add][一个连接({})加入房间,用户{},房间{}]", channel.id(), userID, roomID);
     }
 
@@ -84,6 +85,7 @@ public class NettyChannelManager {
         channel.attr(CHANNEL_ATTR_KEY_USER).set(user);
         // 添加到 userChannels
         userChannels.put(user, channel);
+        logger.info("add user {}", user);
     }
 
     public void addUserTmp(Channel channel, String user) {

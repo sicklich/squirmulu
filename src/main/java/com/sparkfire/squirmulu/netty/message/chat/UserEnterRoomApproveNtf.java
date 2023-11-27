@@ -17,11 +17,22 @@ public class UserEnterRoomApproveNtf implements Message {
     /**
      * 响应提示
      */
-    private String message;
+    private long room_id;
+    /**
+     * 用户id
+     */
+    private long user_id;
+    private String roomname;
+    private String nickname;
+    private String card_id;
 
-    public UserEnterRoomApproveNtf(Integer code, String message) {
+    public UserEnterRoomApproveNtf(Integer code, long room_id, long user_id, String roomname, String nickname, String card_id) {
         this.code = code;
-        this.message = message;
+        this.room_id = room_id;
+        this.user_id = user_id;
+        this.roomname = roomname;
+        this.nickname = nickname;
+        this.card_id = card_id;
     }
 
     public UserEnterRoomApproveNtf() {
@@ -33,13 +44,5 @@ public class UserEnterRoomApproveNtf implements Message {
 
     public void setCode(Integer code) {
         this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 }
