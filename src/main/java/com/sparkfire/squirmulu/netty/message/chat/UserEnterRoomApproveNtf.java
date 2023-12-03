@@ -45,4 +45,44 @@ public class UserEnterRoomApproveNtf implements Message {
     public void setCode(Integer code) {
         this.code = code;
     }
+
+    public long getRoom_id() {
+        return room_id;
+    }
+
+    public void setRoom_id(long room_id) {
+        this.room_id = room_id;
+    }
+
+    public long getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(long user_id) {
+        this.user_id = user_id;
+    }
+
+    public String getRoomname() {
+        return roomname;
+    }
+
+    public void setRoomname(String roomname) {
+        this.roomname = roomname;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getCard_id() {
+        return card_id;
+    }
+
+    public void setCard_id(String card_id) {
+        this.card_id = card_id;
+    }
 }

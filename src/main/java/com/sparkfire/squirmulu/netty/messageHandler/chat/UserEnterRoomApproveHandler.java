@@ -81,7 +81,7 @@ public class UserEnterRoomApproveHandler implements MessageHandler<RoomEnterAppr
 
     @Override
     public String getType() {
-        return UserEnterRoomRequest.TYPE;
+        return RoomEnterApproveReq.TYPE;
     }
 
 }
