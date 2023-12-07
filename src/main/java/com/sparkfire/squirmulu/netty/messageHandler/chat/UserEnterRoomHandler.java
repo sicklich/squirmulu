@@ -77,10 +77,10 @@ public class UserEnterRoomHandler implements MessageHandler<UserEnterRoomRequest
                 //消息保存
                 long id = SnowflakeGenerator.nextId();
                 long reqMsgId = SnowflakeGenerator.nextId();
-                //给玩家和申请人都保存一样的消息
+                //给房主和申请人都保存一样的消息
                 String reqBody = objectMapper.writeValueAsString(new Invocation(UserEnterRoomRequest.TYPE, message));
-                messageDao.insert(new MessageDB(reqMsgId,message.getUser_id(),0,UserEnterRoomRequest.TYPE,reqBody,System.currentTimeMillis()/1000));
-                messageDao.insert(new MessageDB(id,kpId,0,UserEnterRoomNtf.TYPE,ntfBody,System.currentTimeMillis()/1000));
+                messageDao.insert(new MessageDB(reqMsgId,message.getUser_id(),0,UserEnterRoomRequest.TYPE,reqBody,System.currentTimeMillis()/1000, 0));
+                messageDao.insert(new MessageDB(id,kpId,0,UserEnterRoomNtf.TYPE,ntfBody,System.currentTimeMillis()/1000, 0));
                 //再给玩家发消息
                 sendResponse = sendResponse.setCode(2);
                 //加入玩家缓存

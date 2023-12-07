@@ -7,6 +7,7 @@ import com.sparkfire.squirmulu.dao.ImgDao;
 import com.sparkfire.squirmulu.dao.MessageDao;
 import com.sparkfire.squirmulu.entity.IndexBody;
 import com.sparkfire.squirmulu.entity.MessageDB;
+import com.sparkfire.squirmulu.entity.MessageDBWithIDString;
 import com.sparkfire.squirmulu.entity.request.MyImgReq;
 import com.sparkfire.squirmulu.entity.request.MyMsgReq;
 import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
@@ -60,7 +61,6 @@ public class UserController {
 //    public Result<Map<String, Object>> login(@RequestBody SysUser user) {
 //        return Result.ok(sysUserService.login(user.getEmail(), user.getPwd()));
 //    }
-
     @PostMapping("/user-account/login")
     @ApiOperation("用户登录")
     public CommonResponse login(@RequestBody SysUser user) {
@@ -76,7 +76,7 @@ public class UserController {
     @PostMapping("/user-account/register")
     @ApiOperation("注册")
     public Result<Boolean> create(@RequestBody SysUser user) {
-        return Result.ok(sysUserService.insert(user) );
+        return Result.ok(sysUserService.insert(user));
     }
 
     @RequestMapping("/user-account/update-info")
@@ -94,7 +94,7 @@ public class UserController {
     @GetMapping("/{id}")
     @ApiOperation("用户详情")
     public Result<SysUser> getUserInfo(@PathVariable("id") Long id) {
-        return Result.ok(sysUserService.getUserInfoById(id) );
+        return Result.ok(sysUserService.getUserInfoById(id));
     }
 
     @RequestMapping("/user-card/pull-rolecard-list")
@@ -109,12 +109,14 @@ public class UserController {
 
     @PostMapping("/owned/pull-img-list")
     public CommonResponse<List<String>> uploadImage(@RequestBody() MyImgReq req) {
-        return CommonResponse.success(imgDao.getByIDAndType(req.getUserID(),req.getType()).stream().map(file-> httpPath+file).collect(Collectors.toList()));
+        return CommonResponse.success(imgDao.getByIDAndType(req.getUserID(), req.getType()).stream().map(file -> httpPath + file).collect(Collectors.toList()));
     }
 
     @PostMapping("/user-msg/pull-history-msg")
-    public CommonResponse<List<MessageDB>> pullHistoryMessage(@RequestBody() MyMsgReq req) {
-        return CommonResponse.success(messageDao.getByPage(req.getUser_id(),req.getType(), (req.getPage_cur()-1)* req.getPage_size(), req.getPage_size()));
+    public CommonResponse<List<MessageDBWithIDString>> pullHistoryMessage(@RequestBody() MyMsgReq req) {
+        return CommonResponse.success(messageDao.getByPage(req.getUser_id(), req.getType(), (req.getPage_cur() - 1) * req.getPage_size(), req.getPage_size()).stream()
+                .map(msg -> new MessageDBWithIDString(msg.getId() + "", msg.getUser_id(), msg.getType(), msg.getBackend_type(), msg.getMessage_body(), msg.getC_time(), msg.getStatus()))
+                .collect(Collectors.toList()));
     }
 
 }

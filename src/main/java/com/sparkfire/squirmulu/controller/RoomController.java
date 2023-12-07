@@ -10,6 +10,7 @@ import com.sparkfire.squirmulu.entity.request.DeleteRoomReq;
 import com.sparkfire.squirmulu.entity.request.RoomListReq;
 import com.sparkfire.squirmulu.entity.request.RoomSearchListReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
+import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAllWithIDString;
 import com.sparkfire.squirmulu.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/squ/game")
@@ -58,7 +60,9 @@ public class RoomController {
 
     @RequestMapping("/game-into/chat-list")
     public CommonResponse pull_info(@RequestBody ChatListReq req) throws JsonProcessingException {
-        return CommonResponse.success(roomService.getChatList(req));
+        return CommonResponse.success(roomService.getChatList(req).stream()
+                .map(chat->new ChatSendToAllWithIDString(chat.getId()+"", chat.getP_channel(), chat.getP_time(), chat.getC_content()
+                        ,chat.getA_name(),chat.getA_img(),chat.getRoom_id(),chat.getUser_id(),chat.getC_type(),chat.getChat_type())).collect(Collectors.toList()));
     }
 
     @RequestMapping("/game-deal/publish-room")

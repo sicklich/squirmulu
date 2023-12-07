@@ -52,11 +52,13 @@ public class UserEnterRoomApproveHandler implements MessageHandler<RoomEnterAppr
                 String ntfBody = objectMapper.writeValueAsString(new Invocation(UserEnterRoomApproveNtf.TYPE, ntf));
                 //消息保存
                 long id = SnowflakeGenerator.nextId();
-                messageDao.insert(new MessageDB(id,Long.parseLong(message.getUser_id()),0,UserEnterRoomApproveNtf.TYPE,ntfBody,System.currentTimeMillis()/1000));
+                messageDao.insert(new MessageDB(id,Long.parseLong(message.getUser_id()),0,UserEnterRoomApproveNtf.TYPE,ntfBody,System.currentTimeMillis()/1000, 0));
                 if(null != userChannel) {
                     userChannel.writeAndFlush(new TextWebSocketFrame(ntfBody));
                     channelManager.enterRoom(userChannel, Long.parseLong(message.getRoom_id()), Long.parseLong(message.getUser_id()));
                 }
+                //更改之前的消息的状态
+                messageDao.update(1,Long.parseLong(message.getNtfMsgId()));
 
             } else {
                 //这个发给房主
@@ -68,10 +70,12 @@ public class UserEnterRoomApproveHandler implements MessageHandler<RoomEnterAppr
                 String ntfBody = objectMapper.writeValueAsString(new Invocation(UserEnterRoomApproveNtf.TYPE, ntf));
                 //消息保存
                 long id = SnowflakeGenerator.nextId();
-                messageDao.insert(new MessageDB(id,Long.parseLong(message.getUser_id()),0,UserEnterRoomApproveNtf.TYPE,ntfBody,System.currentTimeMillis()/1000));
+                messageDao.insert(new MessageDB(id,Long.parseLong(message.getUser_id()),0,UserEnterRoomApproveNtf.TYPE,ntfBody,System.currentTimeMillis()/1000, 0));
                 if(null != userChannel) {
                     userChannel.writeAndFlush(new TextWebSocketFrame(ntfBody));
                 }
+                //更改之前的消息的状态
+                messageDao.update(2,Long.parseLong(message.getNtfMsgId()));
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();

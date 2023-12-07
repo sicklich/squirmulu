@@ -19,13 +19,16 @@ public class RoomEnterApproveReq implements Message {
     private String nickname;
     private String card_id;
 
-    public RoomEnterApproveReq(boolean approved, String user_id, String room_id, String roomname, String nickname, String card_id) {
+    private String ntfMsgId;
+
+    public RoomEnterApproveReq(boolean approved, String user_id, String room_id, String roomname, String nickname, String card_id, String ntfMsgId) {
         this.approved = approved;
         this.user_id = user_id;
         this.room_id = room_id;
         this.roomname = roomname;
         this.nickname = nickname;
         this.card_id = card_id;
+        this.ntfMsgId = ntfMsgId;
     }
 
     public RoomEnterApproveReq() {
@@ -77,5 +80,13 @@ public class RoomEnterApproveReq implements Message {
 
     public void setCard_id(String card_id) {
         this.card_id = card_id;
+    }
+
+    public String getNtfMsgId() {
+        return ntfMsgId;
+    }
+
+    public void setNtfMsgId(String ntfMsgId) {
+        this.ntfMsgId = ntfMsgId;
     }
 }

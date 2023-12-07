@@ -1,7 +1,7 @@
 package com.sparkfire.squirmulu.entity;
 
-public class MessageDB {
-    private long id;
+public class MessageDBWithIDString {
+    private String id;
     private long user_id;
     private int type;
     private String backend_type;
@@ -11,7 +11,7 @@ public class MessageDB {
 
     private int status;
 
-    public MessageDB(long id, long user_id, int type, String backend_type, String message_body, long c_time, int status) {
+    public MessageDBWithIDString(String id, long user_id, int type, String backend_type, String message_body, long c_time, int status) {
         this.id = id;
         this.user_id = user_id;
         this.type = type;
@@ -21,11 +21,11 @@ public class MessageDB {
         this.status = status;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
