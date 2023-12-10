@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparkfire.squirmulu.dao.MessageDao;
 import com.sparkfire.squirmulu.entity.MessageDB;
+import com.sparkfire.squirmulu.entity.RoomCardUpdateReq;
+import com.sparkfire.squirmulu.entity.RoomCardUpdateTarget;
 import com.sparkfire.squirmulu.entity.RoomInfo;
 import com.sparkfire.squirmulu.netty.handler.MessageHandler;
 import com.sparkfire.squirmulu.netty.message.chat.*;
@@ -17,6 +19,8 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 @Component
 public class UserEnterRoomApproveHandler implements MessageHandler<RoomEnterApproveReq> {
@@ -59,6 +63,8 @@ public class UserEnterRoomApproveHandler implements MessageHandler<RoomEnterAppr
                 }
                 //更改之前的消息的状态
                 messageDao.update(1,Long.parseLong(message.getNtfMsgId()));
+                //另外需要在房间中加入人物卡
+                roomService.updateRoomCard(new RoomCardUpdateReq(message.getRoom_id(), message.getCard_id(), message.getUser_id(), Arrays.asList(new RoomCardUpdateTarget("join","g_players"))));
 
             } else {
                 //这个发给房主
