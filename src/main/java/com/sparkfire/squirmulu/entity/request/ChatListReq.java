@@ -3,13 +3,13 @@ package com.sparkfire.squirmulu.entity.request;
 public class ChatListReq {
     private long room_id;
     private int chat_type;
-    private int page_cur;
+    private int num_cur;
     private int page_size;
 
-    public ChatListReq(long room_id, int chat_type, int page_cur, int page_size) {
+    public ChatListReq(long room_id, int chat_type, int num_cur, int page_size) {
         this.room_id = room_id;
         this.chat_type = chat_type;
-        this.page_cur = page_cur;
+        this.num_cur = num_cur;
         this.page_size = page_size;
     }
 
@@ -32,12 +32,12 @@ public class ChatListReq {
         this.chat_type = chat_type;
     }
 
-    public int getPage_cur() {
-        return page_cur;
+    public int getNum_cur() {
+        return num_cur;
     }
 
-    public void setPage_cur(int page_cur) {
-        this.page_cur = page_cur;
+    public void setNum_cur(int num_cur) {
+        this.num_cur = num_cur;
     }
 
     public int getPage_size() {

@@ -4,16 +4,16 @@ public class MyMsgReq {
     private long user_id;
     private int type;
 
-    private int page_cur;
+    private int num_cur;
     private int page_size;
 
     public MyMsgReq() {
     }
 
-    public MyMsgReq(long user_id, int type, int page_cur, int page_size) {
+    public MyMsgReq(long user_id, int type, int num_cur, int page_size) {
         this.user_id = user_id;
         this.type = type;
-        this.page_cur = page_cur;
+        this.num_cur = num_cur;
         this.page_size = page_size;
     }
 
@@ -25,12 +25,12 @@ public class MyMsgReq {
         this.user_id = user_id;
     }
 
-    public int getPage_cur() {
-        return page_cur;
+    public int getNum_cur() {
+        return num_cur;
     }
 
-    public void setPage_cur(int page_cur) {
-        this.page_cur = page_cur;
+    public void setNum_cur(int num_cur) {
+        this.num_cur = num_cur;
     }
 
     public int getPage_size() {

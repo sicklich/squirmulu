@@ -258,7 +258,7 @@ public class RoomService {
 
     public CommonGameRes updateRoom(IndexBody body) throws JsonProcessingException {
         String key = RedisClient.room_list;
-        RoomInfo info = redisClient.getObjectById(key, String.valueOf(body.getId()), RoomInfo.class);
+        RoomInfo info = getRoomInfo(body.getId()+"");
         String edited = JsonUtil.updateKeyForJsonBody(info.getBody_info(), body.getTargets());
         info.setBody_info(edited);
         //todo  需要测试 引用部分需要认真对待
@@ -269,7 +269,7 @@ public class RoomService {
     }
 
     public CommonResponse updateRoomCard(RoomCardUpdateReq req) throws JsonProcessingException {
-        RoomInfo info = redisClient.getObjectById(RedisClient.room_list, req.getId(), RoomInfo.class);
+        RoomInfo info = getRoomInfo(req.getId());
         // 解析 JSON 字符串
         JsonNode data = objectMapper.readTree(info.getBody_info());
 
@@ -362,7 +362,7 @@ public class RoomService {
 
     public RoomInfoResIDString getRoomInfo(IndexBody body) throws JsonProcessingException {
         String key = RedisClient.room_list;
-        RoomInfo info = redisClient.getObjectById(key, String.valueOf(body.getId()), RoomInfo.class);
+        RoomInfo info = getRoomInfo(body.getId()+"");
         List<GameInfoElement> elements = new ArrayList<>();
         if (body.getTargets().isEmpty()) {
             elements.add(new GameInfoElement("game_room", info.getBody_info()));
@@ -378,9 +378,9 @@ public class RoomService {
     public List<ChatSendToAll> getChatList(ChatListReq req) {
         String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ?
                 RedisClient.room_chat_list : RedisClient.room_record_list) + req.getRoom_id();
-        long start = (long) (req.getPage_cur() - 1) * req.getPage_size();
+        long start = req.getNum_cur();
         long end = start + req.getPage_size() - 1;
-        return redisClient.zRange(key, start, end, ChatSendToAll.class).stream()
+        return redisClient.zRevRange(key, start, end, ChatSendToAll.class).stream()
                 .sorted(Comparator.comparing(ChatSendToAll::getP_time).reversed()).collect(Collectors.toList());
 
     }
@@ -409,7 +409,7 @@ public class RoomService {
 
     public CommonGameRes publish(RoomInfo roomInfo) throws JsonProcessingException {
         String key = RedisClient.room_list;
-        RoomInfo room = redisClient.getObjectById(RedisClient.room_list, roomInfo.getId(), RoomInfo.class);
+        RoomInfo room = getRoomInfo(roomInfo.getId());
         room.setStatus(RoomStatus.RECRUITING.getStatusValue());
         logger.info("publish body{}, room id{}, status{}",room.getBody_info(), room.getId(), room.getStatus());
         String edited = JsonUtil.updateKeyForJsonBody(room.getBody_info(), List.of(new IndexTarget("r_state", 2
@@ -427,9 +427,7 @@ public class RoomService {
     public RoomListRes searchRoomList(RoomSearchListReq req) {
         try {
             if (req.getSearch_type().equals("room")) {
-                RoomInfo room = redisClient.getObjectById(RedisClient.room_list,
-                        req.getKey_words()
-                        , RoomInfo.class);
+                RoomInfo room = getRoomInfo(req.getKey_words());
 //                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                 GameListElement gameElement = new GameListElement(room.getId(), room.getPwd(), JsonUtil.get(room.getBody_info(), "r_info"));
                 return new RoomListRes(List.of(gameElement));
@@ -438,10 +436,10 @@ public class RoomService {
             List<Long> ids = req.getSearch_type().equals("general") ? roomDao.searchByKeyWords(req.getKey_words()) : roomDao.searchByTags(req.getKey_words());
             return new RoomListRes(redisClient.getFields(RedisClient.room_list,
                             ids.stream().map(Object::toString).collect(Collectors.toList())
-                            , RoomInfo.class).stream()
+                            , RoomInfo.class, idString->roomDao.getByIDs(idString)).stream()
 //                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
-                    .skip((long) (req.getPage_size() - 1) * req.getPage_size())
+                    .skip((long) (req.getPage_cur() - 1) * req.getPage_size())
                     .limit(req.getPage_size())
                     .collect(Collectors.toList()));
         } catch (Exception e) {
@@ -453,7 +451,7 @@ public class RoomService {
     public RoomListRes getRoomList(RoomListCondition condition, int page_cur, int page_size) {
         //redis 获取 排序
         try {
-            return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class).stream()
+            return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class, ()-> roomDao.getAll()).stream()
                     .peek(roomInfo -> logger.info("room id{}, status{}", roomInfo.getId(), roomInfo.getStatus()))
                     .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .sorted(condition.getRoomConditionComparator())
@@ -466,7 +464,7 @@ public class RoomService {
     }
 
     public CommonResponse myRoomList(MyRoomListReq req) {
-        List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class));
+        List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class,()->roomDao.getAll()));
         list = list.stream()
                 .filter(room -> roomForSomeone(room.getBody_info(), req.getId(), req.getType()))
                 .map(room ->
@@ -492,16 +490,16 @@ public class RoomService {
     }
 
     public boolean needApproved(String roomId) {
-        RoomInfo room = redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class);
+        RoomInfo room = getRoomInfo(roomId);
         return room.isApprove_required();
     }
 
     public RoomInfo getRoomInfo(String roomId) {
-        return redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class);
+        return redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class, room -> roomDao.getByID(Long.parseLong(roomId)));
     }
 
     public boolean userInRoom(String roomId, String userId) {
-        RoomInfo room = redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class);
+        RoomInfo room = getRoomInfo(roomId);
         try {
             JsonNode node = objectMapper.readTree(room.getBody_info()).get("g_gamers");
             ArrayNode keepers = (ArrayNode) (node.get("g_keepers"));

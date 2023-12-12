@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Component
@@ -42,9 +43,12 @@ public class RedisClient {
     }
 
     // 从Redis的hash中获取单个对象
-    public <T> T getObjectById(String key, String field, Class<T> clazz) {
+    public <T> T getObjectById(String key, String field, Class<T> clazz, Function<String, T> f) {
         String objectJson = (String) redisTemplate.opsForHash().get(key, field);
         try {
+            if(null == objectJson){
+                return f.apply(field);
+            }
             return objectMapper.readValue(objectJson, clazz);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -52,9 +56,12 @@ public class RedisClient {
     }
 
     // 获取整个对象列表
-    public <T> List<T> getAllObjects(String key, Class<T> clazz) {
+    public <T> List<T> getAllObjects(String key, Class<T> clazz, Supplier<List<T>> s) {
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
         Map<String, String> objectMap = hashOperations.entries(key);
+        if(objectMap.isEmpty() || objectMap.values().stream().allMatch(Objects::isNull)){
+            return s.get();
+        }
         return objectMap.values().stream()
                 .map(value -> {
                     try {
@@ -67,10 +74,14 @@ public class RedisClient {
     }
 
     // 获取整个对象列表
-    public <T> List<T> getFields(String key, List<String> fields, Class<T> clazz) {
+    public <T> List<T> getFields(String key, List<String> fields, Class<T> clazz, Function<String, List<T>> f) {
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
         List<String> list = hashOperations.multiGet(key, fields);
+        if(list.stream().allMatch(Objects::isNull)){
+            return f.apply(fields.stream().map(String::valueOf).collect(Collectors.joining(",")));
+        }
         return list.stream()
+                .filter(Objects::nonNull)
                 .map(value -> {
                     try {
                         return objectMapper.readValue(value, clazz);
@@ -143,6 +154,12 @@ public class RedisClient {
     public <T> Set<T> zRange(String key, long start, long end, Class<T> clazz) {
         ZSetOperations<String, String> zSetOp = redisTemplate.opsForZSet();
         Set<String> jsonStringSet = redisTemplate.opsForZSet().range(key, start, end);
+        return deserializeJsonSet(jsonStringSet, clazz);
+    }
+
+    public <T> Set<T> zRevRange(String key, long start, long end, Class<T> clazz) {
+        ZSetOperations<String, String> zSetOp = redisTemplate.opsForZSet();
+        Set<String> jsonStringSet = redisTemplate.opsForZSet().reverseRange(key, start, end);
         return deserializeJsonSet(jsonStringSet, clazz);
     }
 

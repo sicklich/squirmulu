@@ -114,7 +114,7 @@ public class UserController {
 
     @PostMapping("/user-msg/pull-history-msg")
     public CommonResponse<List<MessageDBWithIDString>> pullHistoryMessage(@RequestBody() MyMsgReq req) {
-        return CommonResponse.success(messageDao.getByPage(req.getUser_id(), req.getType(), (req.getPage_cur() - 1) * req.getPage_size(), req.getPage_size()).stream()
+        return CommonResponse.success(messageDao.getByPage(req.getUser_id(), req.getType(), req.getNum_cur(), req.getPage_size()).stream()
                 .map(msg -> new MessageDBWithIDString(msg.getId() + "", msg.getUser_id(), msg.getType(), msg.getBackend_type(), msg.getMessage_body(), msg.getC_time(), msg.getStatus()))
                 .collect(Collectors.toList()));
     }

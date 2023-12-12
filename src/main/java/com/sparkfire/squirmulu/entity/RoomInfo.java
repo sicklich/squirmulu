@@ -1,5 +1,6 @@
 package com.sparkfire.squirmulu.entity;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 public class RoomInfo {
     private String id;
@@ -21,24 +22,37 @@ public class RoomInfo {
     private String r_tags;
     private boolean approve_required;
 
-    public RoomInfo(String id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, String kp_name, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags, boolean approve_required) {
-        this.id = id;
-        this.status = status;
-        this.pl_cur = pl_cur;
-        this.pl_max = pl_max;
-        this.pwd = pwd;
-        this.g_time = g_time;
-        this.body_info = body_info;
-        this.kp_id = kp_id;
-        this.kp_name = kp_name;
-        this.create_time = create_time;
-        this.publish_time = publish_time;
-        this.edit_time = edit_time;
-        this.r_name = r_name;
-        this.r_des = r_des;
-        this.r_tags = r_tags;
-        this.approve_required = approve_required;
-    }
+
+
+//    public RoomInfo(String id, long kp_id, String body_info, long create_time,long edit_time, String r_name, String r_des, String r_tags) {
+//        this.id = id;
+//        this.body_info = body_info;
+//        this.kp_id = kp_id;
+//        this.create_time = create_time;
+//        this.edit_time = edit_time;
+//        this.r_name = r_name;
+//        this.r_des = r_des;
+//        this.r_tags = r_tags;
+//    }
+//
+//    public RoomInfo(String id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, String kp_name, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags, boolean approve_required) {
+//        this.id = id;
+//        this.status = status;
+//        this.pl_cur = pl_cur;
+//        this.pl_max = pl_max;
+//        this.pwd = pwd;
+//        this.g_time = g_time;
+//        this.body_info = body_info;
+//        this.kp_id = kp_id;
+//        this.kp_name = kp_name;
+//        this.create_time = create_time;
+//        this.publish_time = publish_time;
+//        this.edit_time = edit_time;
+//        this.r_name = r_name;
+//        this.r_des = r_des;
+//        this.r_tags = r_tags;
+//        this.approve_required = approve_required;
+//    }
 
     public boolean isApprove_required() {
         return approve_required;
@@ -182,4 +196,6 @@ public class RoomInfo {
     public void setBody_info(String body_info) {
         this.body_info = body_info;
     }
+
+    public void setBody_info(byte[] body_info) {this.body_info = new String(body_info, StandardCharsets.UTF_8);}
 }
