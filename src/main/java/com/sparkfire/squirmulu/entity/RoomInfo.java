@@ -54,67 +54,24 @@ public class RoomInfo {
 //        this.approve_required = approve_required;
 //    }
 
-    public boolean isApprove_required() {
-        return approve_required;
+//    public int publishCycle() {
+//        return (int) ((System.currentTimeMillis()/1000 - getCreate_time()) / (4*3600));
+//    }
+//
+//    public int plShorted() {
+//        return pl_max-pl_cur;
+//    }
+//
+//    public int pwdNeeded() {
+//        return Objects.equals(pwd, "") ?0:1;
+//    }
+
+    public String getId() {
+        return id;
     }
 
-    public void setApprove_required(boolean approve_required) {
-        this.approve_required = approve_required;
-    }
-
-    public String getR_tags() {
-        return r_tags;
-    }
-
-    public void setR_tags(String r_tags) {
-        this.r_tags = r_tags;
-    }
-
-    public String getR_name() {
-        return r_name;
-    }
-
-    public void setR_name(String r_name) {
-        this.r_name = r_name;
-    }
-
-    public String getR_des() {
-        return r_des;
-    }
-
-    public void setR_des(String r_des) {
-        this.r_des = r_des;
-    }
-
-    public RoomInfo() {
-    }
-
-    public String getKp_name() {
-        return kp_name;
-    }
-
-    public void setKp_name(String kp_name) {
-        this.kp_name = kp_name;
-    }
-
-    public long getPublish_time() {
-        return publish_time;
-    }
-
-    public void setPublish_time(long publish_time) {
-        this.publish_time = publish_time;
-    }
-
-    public int publishCycle() {
-        return (int) ((System.currentTimeMillis()/1000 - getCreate_time()) / (4*3600));
-    }
-
-    public int plShorted() {
-        return pl_max-pl_cur;
-    }
-
-    public int pwdNeeded() {
-        return Objects.equals(pwd, "") ?0:1;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public int getStatus() {
@@ -123,14 +80,6 @@ public class RoomInfo {
 
     public void setStatus(int status) {
         this.status = status;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public int getPl_cur() {
@@ -165,12 +114,28 @@ public class RoomInfo {
         this.g_time = g_time;
     }
 
+    public String getBody_info() {
+        return body_info;
+    }
+
+    public void setBody_info(String body_info) {
+        this.body_info = body_info;
+    }
+
     public long getKp_id() {
         return kp_id;
     }
 
     public void setKp_id(long kp_id) {
         this.kp_id = kp_id;
+    }
+
+    public String getKp_name() {
+        return kp_name;
+    }
+
+    public void setKp_name(String kp_name) {
+        this.kp_name = kp_name;
     }
 
     public long getCreate_time() {
@@ -181,6 +146,14 @@ public class RoomInfo {
         this.create_time = create_time;
     }
 
+    public long getPublish_time() {
+        return publish_time;
+    }
+
+    public void setPublish_time(long publish_time) {
+        this.publish_time = publish_time;
+    }
+
     public long getEdit_time() {
         return edit_time;
     }
@@ -189,13 +162,37 @@ public class RoomInfo {
         this.edit_time = edit_time;
     }
 
-    public String getBody_info() {
-        return body_info;
+    public String getR_name() {
+        return r_name;
     }
 
-    public void setBody_info(String body_info) {
-        this.body_info = body_info;
+    public void setR_name(String r_name) {
+        this.r_name = r_name;
     }
 
-    public void setBody_info(byte[] body_info) {this.body_info = new String(body_info, StandardCharsets.UTF_8);}
+    public String getR_des() {
+        return r_des;
+    }
+
+    public void setR_des(String r_des) {
+        this.r_des = r_des;
+    }
+
+    public String getR_tags() {
+        return r_tags;
+    }
+
+    public void setR_tags(String r_tags) {
+        this.r_tags = r_tags;
+    }
+
+    public boolean isApprove_required() {
+        return approve_required;
+    }
+
+    public void setApprove_required(boolean approve_required) {
+        this.approve_required = approve_required;
+    }
+
+    //    public void setBody_info(byte[] body_info) {this.body_info = new String(body_info, StandardCharsets.UTF_8);}
 }

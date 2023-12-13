@@ -78,7 +78,13 @@ public class RedisClient {
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
         List<String> list = hashOperations.multiGet(key, fields);
         if(list.stream().allMatch(Objects::isNull)){
-            return f.apply(fields.stream().map(String::valueOf).collect(Collectors.joining(",")));
+            List<T> res = f.apply(fields.stream().map(String::valueOf).collect(Collectors.joining(",")));
+            Map<String, String> map = new HashMap<>();
+            for(T t:res){
+                map.put()
+            }
+            hashOperations.putAll();
+            return res;
         }
         return list.stream()
                 .filter(Objects::nonNull)

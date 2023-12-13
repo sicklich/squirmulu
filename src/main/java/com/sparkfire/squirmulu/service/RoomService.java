@@ -48,148 +48,7 @@ public class RoomService {
 //    @Autowired
 //    RoomSearchService roomSearchService;
 
-    private static final String body_info = "{" +
-            "  \"id\": \"\"," +
-            "  \"kp_id\": \"\"," +
-            "  \"r_info\": {" +
-            "    \"r_img\": \"\"," +
-            "    \"r_name\": \"\"," +
-            "    \"kp_name\": \"\"," +
-            "    \"c_time\": \"\"," +
-            "    \"g_time\": \"\"," +
-            "    \"pl_cur\": 0," +
-            "    \"pl_max\": 4," +
-            "    \"r_state\": 0," +
-            "    \"r_tags\": [" +
-            "      \"COC7th\"" +
-            "    ]," +
-            "    \"r_des\": \"\"" +
-            "  }," +
-            "  \"g_setting\": {" +
-            "    \"g_type\": \"COC\"," +
-            "    \"g_creator\": \"\"," +
-            "    \"g_mods\": \"\"," +
-            "    \"p_time\": \"\"," +
-            "    \"c_price\": 0" +
-            "  }," +
-            "  \"r_setting\": {" +
-            "    \"r_rule\": {" +
-            "      \"r_acc\": {" +
-            "        \"account\": \"\"," +
-            "        \"password\": \"\"," +
-            "        \"approve_required\": true" +
-            "      }," +
-            "      \"r_card\": {" +
-            "        \"self_modi\": false," +
-            "        \"cross_check\": false" +
-            "      }," +
-            "      \"r_check\": {" +
-            "        \"succ\": 5," +
-            "        \"fail\": 96," +
-            "        \"strict_required\": true" +
-            "      }," +
-            "      \"r_result\": {" +
-            "        \"self_roll\": true," +
-            "        \"edit_forbidden\": false" +
-            "      }," +
-            "      \"r_more\": {" +
-            "        \"statement\": \"\"" +
-            "      }" +
-            "    }" +
-            "  }," +
-            "  \"r_npc\": {" +
-            "    \"npc_list\": [" +
-            "      {" +
-            "        \"npc_setting\": {" +
-            "          \"creator\": \"\"," +
-            "          \"npc_mods\": \"\"," +
-            "          \"p_time\": \"\"," +
-            "          \"c_price\": 0" +
-            "        }," +
-            "        \"npc_info\": {" +
-            "          \"name\": \"\"," +
-            "          \"img\": \"\"," +
-            "          \"type\": \"\"," +
-            "          \"intro\": \"\"" +
-            "        }," +
-            "        \"npc_state\": {" +
-            "          \"hp_cur\": 0," +
-            "          \"mp_cur\": 0," +
-            "          \"damage\": \"\"" +
-            "        }," +
-            "        \"npc_att\": {" +
-            "          \"str\": 0," +
-            "          \"con\": 0," +
-            "          \"siz\": 0," +
-            "          \"dex\": 0," +
-            "          \"app\": 0," +
-            "          \"int\": 0," +
-            "          \"pow\": 0," +
-            "          \"edu\": 0," +
-            "          \"luc\": 0" +
-            "        }," +
-            "        \"npc_extra\": {" +
-            "          \"att\": [" +
-            "            {" +
-            "              \"name\": \"\"," +
-            "              \"value\": 0" +
-            "            }" +
-            "          ]," +
-            "          \"details\": \"\"" +
-            "        }" +
-            "      }" +
-            "    ]" +
-            "  }," +
-            "  \"r_expo\": {" +
-            "    \"expo_map\": {" +
-            "      \"img\": \"\"," +
-            "      \"intro\": \"\"" +
-            "    }," +
-            "    \"expo_scene_cur\": 0," +
-            "    \"expo_scene\": [" +
-            "          {" +
-            "                \"name\": \"\", " +
-            "                \"img\": \"\", " +
-            "                \"bgm\": \"\", " +
-            "                \"des\": \"\", " +
-            "                \"vis\": true  " +
-            "          }" +
-            "     ]" +
-            "  }," +
-            "  \"g_gamers\": {" +
-            "    \"g_keepers\": []," +
-            "    \"g_players\": []," +
-            "    \"g_audiences\": []" +
-            "  }," +
-            "  \"g_record\": {" +
-            "  \"channel\": [" +
-            "           {" +
-            "               \"tips\": \"主频道\"," +
-            "               \"vis_list\": []" +
-            "           }" +
-            "   ]," +
-            "    \"record_list\": []" +
-            "  }," +
-            "  \"g_chat\": {" +
-            "  \"channel\": [" +
-            "           {" +
-            "               \"tips\": \"主频道\"," +
-            "               \"vis_list\": []" +
-            "           }" +
-            "   ]," +
-            "    \"record_list\": []" +
-            "  }," +
-            "  \"g_clue\": {" +
-            "    \"clue_list\": [" +
-            "      {" +
-            "        \"c_a_name\": \"\"," +
-            "        \"c_content\": \"\"," +
-            "        \"vis_status\": false," +
-            "        \"vis_avatar\": []" +
-            "      }" +
-            "    ]" +
-            "  }" +
-            "}";
+    private static final String body_info = "{" + "  \"id\": \"\"," + "  \"kp_id\": \"\"," + "  \"r_info\": {" + "    \"r_img\": \"\"," + "    \"r_name\": \"\"," + "    \"kp_name\": \"\"," + "    \"c_time\": \"\"," + "    \"g_time\": \"\"," + "    \"pl_cur\": 0," + "    \"pl_max\": 4," + "    \"r_state\": 0," + "    \"r_tags\": [" + "      \"COC7th\"" + "    ]," + "    \"r_des\": \"\"" + "  }," + "  \"g_setting\": {" + "    \"g_type\": \"COC\"," + "    \"g_creator\": \"\"," + "    \"g_mods\": \"\"," + "    \"p_time\": \"\"," + "    \"c_price\": 0" + "  }," + "  \"r_setting\": {" + "    \"r_rule\": {" + "      \"r_acc\": {" + "        \"account\": \"\"," + "        \"password\": \"\"," + "        \"approve_required\": true" + "      }," + "      \"r_card\": {" + "        \"self_modi\": false," + "        \"cross_check\": false" + "      }," + "      \"r_check\": {" + "        \"succ\": 5," + "        \"fail\": 96," + "        \"strict_required\": true" + "      }," + "      \"r_result\": {" + "        \"self_roll\": true," + "        \"edit_forbidden\": false" + "      }," + "      \"r_more\": {" + "        \"statement\": \"\"" + "      }" + "    }" + "  }," + "  \"r_npc\": {" + "    \"npc_list\": [" + "      {" + "        \"npc_setting\": {" + "          \"creator\": \"\"," + "          \"npc_mods\": \"\"," + "          \"p_time\": \"\"," + "          \"c_price\": 0" + "        }," + "        \"npc_info\": {" + "          \"name\": \"\"," + "          \"img\": \"\"," + "          \"type\": \"\"," + "          \"intro\": \"\"" + "        }," + "        \"npc_state\": {" + "          \"hp_cur\": 0," + "          \"mp_cur\": 0," + "          \"damage\": \"\"" + "        }," + "        \"npc_att\": {" + "          \"str\": 0," + "          \"con\": 0," + "          \"siz\": 0," + "          \"dex\": 0," + "          \"app\": 0," + "          \"int\": 0," + "          \"pow\": 0," + "          \"edu\": 0," + "          \"luc\": 0" + "        }," + "        \"npc_extra\": {" + "          \"att\": [" + "            {" + "              \"name\": \"\"," + "              \"value\": 0" + "            }" + "          ]," + "          \"details\": \"\"" + "        }" + "      }" + "    ]" + "  }," + "  \"r_expo\": {" + "    \"expo_map\": {" + "      \"img\": \"\"," + "      \"intro\": \"\"" + "    }," + "    \"expo_scene_cur\": 0," + "    \"expo_scene\": [" + "          {" + "                \"name\": \"\", " + "                \"img\": \"\", " + "                \"bgm\": \"\", " + "                \"des\": \"\", " + "                \"vis\": true  " + "          }" + "     ]" + "  }," + "  \"g_gamers\": {" + "    \"g_keepers\": []," + "    \"g_players\": []," + "    \"g_audiences\": []" + "  }," + "  \"g_record\": {" + "  \"channel\": [" + "           {" + "               \"tips\": \"主频道\"," + "               \"vis_list\": []" + "           }" + "   ]," + "    \"record_list\": []" + "  }," + "  \"g_chat\": {" + "  \"channel\": [" + "           {" + "               \"tips\": \"主频道\"," + "               \"vis_list\": []" + "           }" + "   ]," + "    \"record_list\": []" + "  }," + "  \"g_clue\": {" + "    \"clue_list\": [" + "      {" + "        \"c_a_name\": \"\"," + "        \"c_content\": \"\"," + "        \"vis_status\": false," + "        \"vis_avatar\": []" + "      }" + "    ]" + "  }" + "}";
 
     public CommonGameRes createRoom(RoomInfo info) {
         long now = System.currentTimeMillis() / 1000;
@@ -246,7 +105,7 @@ public class RoomService {
             info.setR_name(node.get("r_info").get("r_name").asText());
             info.setR_des(node.get("r_info").get("r_des").asText());
             long kpId = node.get("kp_id").asLong();
-            if(kpId != 0) {
+            if (kpId != 0) {
                 info.setKp_id(node.get("kp_id").asLong());
             }
             info.setR_tags(objectMapper.writeValueAsString(node.get("r_info").get("r_tags")));
@@ -258,7 +117,7 @@ public class RoomService {
 
     public CommonGameRes updateRoom(IndexBody body) throws JsonProcessingException {
         String key = RedisClient.room_list;
-        RoomInfo info = getRoomInfo(body.getId()+"");
+        RoomInfo info = getRoomInfo(body.getId() + "");
         String edited = JsonUtil.updateKeyForJsonBody(info.getBody_info(), body.getTargets());
         info.setBody_info(edited);
         //todo  需要测试 引用部分需要认真对待
@@ -362,7 +221,7 @@ public class RoomService {
 
     public RoomInfoResIDString getRoomInfo(IndexBody body) throws JsonProcessingException {
         String key = RedisClient.room_list;
-        RoomInfo info = getRoomInfo(body.getId()+"");
+        RoomInfo info = getRoomInfo(body.getId() + "");
         List<GameInfoElement> elements = new ArrayList<>();
         if (body.getTargets().isEmpty()) {
             elements.add(new GameInfoElement("game_room", info.getBody_info()));
@@ -376,12 +235,10 @@ public class RoomService {
     }
 
     public List<ChatSendToAll> getChatList(ChatListReq req) {
-        String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ?
-                RedisClient.room_chat_list : RedisClient.room_record_list) + req.getRoom_id();
+        String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + req.getRoom_id();
         long start = req.getNum_cur();
         long end = start + req.getPage_size() - 1;
-        return redisClient.zRevRange(key, start, end, ChatSendToAll.class).stream()
-                .sorted(Comparator.comparing(ChatSendToAll::getP_time).reversed()).collect(Collectors.toList());
+        return redisClient.zRevRange(key, start, end, ChatSendToAll.class).stream().sorted(Comparator.comparing(ChatSendToAll::getP_time).reversed()).collect(Collectors.toList());
 
     }
 
@@ -411,13 +268,12 @@ public class RoomService {
         String key = RedisClient.room_list;
         RoomInfo room = getRoomInfo(roomInfo.getId());
         room.setStatus(RoomStatus.RECRUITING.getStatusValue());
-        logger.info("publish body{}, room id{}, status{}",room.getBody_info(), room.getId(), room.getStatus());
-        String edited = JsonUtil.updateKeyForJsonBody(room.getBody_info(), List.of(new IndexTarget("r_state", 2
-                , List.of("r_info"), String.valueOf(RoomStatus.RECRUITING.getStatusValue()))));
+        logger.info("publish body{}, room id{}, status{}", room.getBody_info(), room.getId(), room.getStatus());
+        String edited = JsonUtil.updateKeyForJsonBody(room.getBody_info(), List.of(new IndexTarget("r_state", 2, List.of("r_info"), String.valueOf(RoomStatus.RECRUITING.getStatusValue()))));
         room.setBody_info(edited);
         processBaseInfo(room);
         redisClient.addObject(key, String.valueOf(room.getId()), room);
-        logger.info("publish body{}, room id{}, status{}",room.getBody_info(), room.getId(), room.getStatus());
+        logger.info("publish body{}, room id{}, status{}", room.getBody_info(), room.getId(), room.getStatus());
         long now = System.currentTimeMillis() / 1000;
         room.setEdit_time(now);
         roomDao.update(room);
@@ -434,14 +290,14 @@ public class RoomService {
             }
             //redis 获取 排序
             List<Long> ids = req.getSearch_type().equals("general") ? roomDao.searchByKeyWords(req.getKey_words()) : roomDao.searchByTags(req.getKey_words());
-            return new RoomListRes(redisClient.getFields(RedisClient.room_list,
-                            ids.stream().map(Object::toString).collect(Collectors.toList())
-                            , RoomInfo.class, idString->roomDao.getByIDs(idString)).stream()
+            return new RoomListRes(redisClient.getFields(RedisClient.room_list, ids.stream().map(Object::toString).collect(Collectors.toList()), RoomInfo.class
+                            , idString -> roomDao.getByIDs(idString).stream()
+                                    .peek(this::processBaseInfo)
+                                    .collect(Collectors.toList())
+                            ).stream()
 //                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
-                    .skip((long) (req.getPage_cur() - 1) * req.getPage_size())
-                    .limit(req.getPage_size())
-                    .collect(Collectors.toList()));
+                    .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList()));
         } catch (Exception e) {
             return new RoomListRes(new ArrayList<>());
         }
@@ -451,12 +307,7 @@ public class RoomService {
     public RoomListRes getRoomList(RoomListCondition condition, int page_cur, int page_size) {
         //redis 获取 排序
         try {
-            return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class, ()-> roomDao.getAll()).stream()
-                    .peek(roomInfo -> logger.info("room id{}, status{}", roomInfo.getId(), roomInfo.getStatus()))
-                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
-                    .sorted(condition.getRoomConditionComparator())
-                    .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
-                    .skip((long) page_size * (page_cur - 1)).limit(page_size).collect(Collectors.toList()));
+            return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class, () -> roomDao.getAll()).stream().peek(roomInfo -> logger.info("room id{}, status{}", roomInfo.getId(), roomInfo.getStatus())).filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue()).sorted(condition.getRoomConditionComparator()).map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info"))).skip((long) page_size * (page_cur - 1)).limit(page_size).collect(Collectors.toList()));
         } catch (Exception e) {
             return new RoomListRes(new ArrayList<>());
         }
@@ -464,26 +315,21 @@ public class RoomService {
     }
 
     public CommonResponse myRoomList(MyRoomListReq req) {
-        List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class,()->roomDao.getAll()));
-        list = list.stream()
-                .filter(room -> roomForSomeone(room.getBody_info(), req.getId(), req.getType()))
-                .map(room ->
-                {
-                    String bodyinfo = room.getBody_info();
-                    try {
-                        JsonNode node = objectMapper.readTree(bodyinfo);
-                        if (node.isObject()) {
-                            ObjectNode objectNode = (ObjectNode) node;
-                            objectNode.retain("r_info"); // 仅保留目标键值对
-                            room.setBody_info(objectMapper.writeValueAsString(objectNode));
-                        }
-                        return room;
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .sorted(Comparator.comparing(RoomInfo::getEdit_time))
-                .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
+        List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class, () -> roomDao.getAll()));
+        list = list.stream().filter(room -> roomForSomeone(room.getBody_info(), req.getId(), req.getType())).map(room -> {
+            String bodyinfo = room.getBody_info();
+            try {
+                JsonNode node = objectMapper.readTree(bodyinfo);
+                if (node.isObject()) {
+                    ObjectNode objectNode = (ObjectNode) node;
+                    objectNode.retain("r_info"); // 仅保留目标键值对
+                    room.setBody_info(objectMapper.writeValueAsString(objectNode));
+                }
+                return room;
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }).sorted(Comparator.comparing(RoomInfo::getEdit_time)).skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
 
         return CommonResponse.success(list);
 

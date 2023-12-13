@@ -28,18 +28,18 @@ public enum RoomListCondition {
 
     public Comparator<RoomInfo> getRoomConditionComparator() throws Exception {
         switch (statusValue) {
-            case 0:
-                return Comparator.comparing(RoomInfo::publishCycle)
-                        .thenComparing(RoomInfo::plShorted)
-                        .thenComparing(RoomInfo::getPublish_time);
-            case 1:
-                return Comparator.comparing(RoomInfo::publishCycle)
-                        .thenComparing(RoomInfo::plShorted)
-                        .thenComparing(RoomInfo::getG_time).reversed();
-            case 2:
-                return Comparator.comparing(RoomInfo::publishCycle)
-                        .thenComparing(RoomInfo::pwdNeeded)
-                        .thenComparing(RoomInfo::getG_time);
+//            case 0:
+//                return Comparator.comparing(RoomInfo::publishCycle)
+//                        .thenComparing(RoomInfo::plShorted)
+//                        .thenComparing(RoomInfo::getPublish_time);
+//            case 1:
+//                return Comparator.comparing(RoomInfo::publishCycle)
+//                        .thenComparing(RoomInfo::plShorted)
+//                        .thenComparing(RoomInfo::getG_time).reversed();
+//            case 2:
+//                return Comparator.comparing(RoomInfo::publishCycle)
+//                        .thenComparing(RoomInfo::pwdNeeded)
+//                        .thenComparing(RoomInfo::getG_time);
             default:
                 throw new Exception("no such condition");
         }
