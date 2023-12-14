@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -307,7 +308,13 @@ public class RoomService {
     public RoomListRes getRoomList(RoomListCondition condition, int page_cur, int page_size) {
         //redis 获取 排序
         try {
-            return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class, () -> roomDao.getAll()).stream().peek(roomInfo -> logger.info("room id{}, status{}", roomInfo.getId(), roomInfo.getStatus())).filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue()).sorted(condition.getRoomConditionComparator()).map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info"))).skip((long) page_size * (page_cur - 1)).limit(page_size).collect(Collectors.toList()));
+            return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class
+                    , () -> roomDao.getAll().stream().collect(Collectors.toMap(RoomInfo::getId, Function.identity())))
+                    .stream().peek(roomInfo -> logger.info("room id{}, status{}", roomInfo.getId(), roomInfo.getStatus()))
+                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
+                    .sorted(condition.getRoomConditionComparator())
+                    .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
+                    .skip((long) page_size * (page_cur - 1)).limit(page_size).collect(Collectors.toList()));
         } catch (Exception e) {
             return new RoomListRes(new ArrayList<>());
         }
@@ -315,7 +322,7 @@ public class RoomService {
     }
 
     public CommonResponse myRoomList(MyRoomListReq req) {
-        List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class, () -> roomDao.getAll()));
+        List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class, () -> roomDao.getAll().stream().collect(Collectors.toMap(RoomInfo::getId, Function.identity()))));
         list = list.stream().filter(room -> roomForSomeone(room.getBody_info(), req.getId(), req.getType())).map(room -> {
             String bodyinfo = room.getBody_info();
             try {

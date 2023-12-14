@@ -47,7 +47,11 @@ public class RedisClient {
         String objectJson = (String) redisTemplate.opsForHash().get(key, field);
         try {
             if(null == objectJson){
-                return f.apply(field);
+                T t = f.apply(field);
+                if(t!=null) {
+                    redisTemplate.opsForHash().put(key,field,objectMapper.writeValueAsString(t));
+                }
+                return t;
             }
             return objectMapper.readValue(objectJson, clazz);
         } catch (IOException e) {
@@ -56,11 +60,21 @@ public class RedisClient {
     }
 
     // 获取整个对象列表
-    public <T> List<T> getAllObjects(String key, Class<T> clazz, Supplier<List<T>> s) {
+    public <T> List<T> getAllObjects(String key, Class<T> clazz, Supplier<Map<String,T>> s) {
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
         Map<String, String> objectMap = hashOperations.entries(key);
         if(objectMap.isEmpty() || objectMap.values().stream().allMatch(Objects::isNull)){
-            return s.get();
+            Map<String, T> map = s.get();
+            Map<String, String> mapForHash = new HashMap<>();
+            map.forEach((k,v)->{
+                try {
+                    mapForHash.put(k, objectMapper.writeValueAsString(v));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            });
+            hashOperations.putAll(key, mapForHash);
+            return new ArrayList<>(map.values());
         }
         return objectMap.values().stream()
                 .map(value -> {
@@ -80,10 +94,14 @@ public class RedisClient {
         if(list.stream().allMatch(Objects::isNull)){
             List<T> res = f.apply(fields.stream().map(String::valueOf).collect(Collectors.joining(",")));
             Map<String, String> map = new HashMap<>();
-            for(T t:res){
-                map.put()
+            for(int i=0;i<fields.size();i++){
+                try {
+                    map.put(fields.get(i), objectMapper.writeValueAsString(res.get(i)));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
             }
-            hashOperations.putAll();
+            hashOperations.putAll(key, map);
             return res;
         }
         return list.stream()
