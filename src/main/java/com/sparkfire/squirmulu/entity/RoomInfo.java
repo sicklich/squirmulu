@@ -23,48 +23,17 @@ public class RoomInfo {
     private boolean approve_required;
 
 
+    public int publishCycle() {
+        return (int) ((System.currentTimeMillis()/1000 - getCreate_time()) / (4*3600));
+    }
 
-//    public RoomInfo(String id, long kp_id, String body_info, long create_time,long edit_time, String r_name, String r_des, String r_tags) {
-//        this.id = id;
-//        this.body_info = body_info;
-//        this.kp_id = kp_id;
-//        this.create_time = create_time;
-//        this.edit_time = edit_time;
-//        this.r_name = r_name;
-//        this.r_des = r_des;
-//        this.r_tags = r_tags;
-//    }
-//
-//    public RoomInfo(String id, int status, int pl_cur, int pl_max, String pwd, long g_time, String body_info, long kp_id, String kp_name, long create_time, long publish_time, long edit_time, String r_name, String r_des, String r_tags, boolean approve_required) {
-//        this.id = id;
-//        this.status = status;
-//        this.pl_cur = pl_cur;
-//        this.pl_max = pl_max;
-//        this.pwd = pwd;
-//        this.g_time = g_time;
-//        this.body_info = body_info;
-//        this.kp_id = kp_id;
-//        this.kp_name = kp_name;
-//        this.create_time = create_time;
-//        this.publish_time = publish_time;
-//        this.edit_time = edit_time;
-//        this.r_name = r_name;
-//        this.r_des = r_des;
-//        this.r_tags = r_tags;
-//        this.approve_required = approve_required;
-//    }
+    public int plShorted() {
+        return pl_max-pl_cur;
+    }
 
-//    public int publishCycle() {
-//        return (int) ((System.currentTimeMillis()/1000 - getCreate_time()) / (4*3600));
-//    }
-//
-//    public int plShorted() {
-//        return pl_max-pl_cur;
-//    }
-//
-//    public int pwdNeeded() {
-//        return Objects.equals(pwd, "") ?0:1;
-//    }
+    public int pwdNeeded() {
+        return Objects.equals(pwd, "") ?0:1;
+    }
 
     public String getId() {
         return id;

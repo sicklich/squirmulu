@@ -110,6 +110,7 @@ public class RoomService {
                 info.setKp_id(node.get("kp_id").asLong());
             }
             info.setR_tags(objectMapper.writeValueAsString(node.get("r_info").get("r_tags")));
+            info.setStatus(node.get("r_info").get("r_state").asInt());
             info.setBody_info(node.toString());
         } catch (JsonProcessingException e) {
             return;
@@ -311,6 +312,7 @@ public class RoomService {
             return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class
                     , () -> roomDao.getAll().stream().collect(Collectors.toMap(RoomInfo::getId, Function.identity())))
                     .stream().peek(roomInfo -> logger.info("room id{}, status{}", roomInfo.getId(), roomInfo.getStatus()))
+                    .peek(this::processBaseInfo)
                     .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .sorted(condition.getRoomConditionComparator())
                     .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
@@ -323,7 +325,9 @@ public class RoomService {
 
     public CommonResponse myRoomList(MyRoomListReq req) {
         List<RoomInfo> list = new ArrayList<>(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class, () -> roomDao.getAll().stream().collect(Collectors.toMap(RoomInfo::getId, Function.identity()))));
-        list = list.stream().filter(room -> roomForSomeone(room.getBody_info(), req.getId(), req.getType())).map(room -> {
+        list = list.stream().filter(room -> roomForSomeone(room.getBody_info(), req.getId(), req.getType()))
+                .peek(this::processBaseInfo)
+                .map(room -> {
             String bodyinfo = room.getBody_info();
             try {
                 JsonNode node = objectMapper.readTree(bodyinfo);
@@ -348,7 +352,11 @@ public class RoomService {
     }
 
     public RoomInfo getRoomInfo(String roomId) {
-        return redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class, room -> roomDao.getByID(Long.parseLong(roomId)));
+        return redisClient.getObjectById(RedisClient.room_list, roomId, RoomInfo.class, roomID -> {
+            RoomInfo room = roomDao.getByID(Long.parseLong(roomID));
+            processBaseInfo(room);
+            return room;
+        });
     }
 
     public boolean userInRoom(String roomId, String userId) {
