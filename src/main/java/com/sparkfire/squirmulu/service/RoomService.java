@@ -315,6 +315,7 @@ public class RoomService {
                     .peek(this::processBaseInfo)
                     .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .sorted(condition.getRoomConditionComparator())
+                    .filter(room -> condition.getStatusValue() != 2 || room.pwdNeeded() == 0)
                     .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
                     .skip((long) page_size * (page_cur - 1)).limit(page_size).collect(Collectors.toList()));
         } catch (Exception e) {

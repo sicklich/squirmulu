@@ -38,7 +38,7 @@ public enum RoomListCondition {
                         .thenComparing(RoomInfo::getG_time).reversed();
             case 2:
                 return Comparator.comparing(RoomInfo::publishCycle)
-                        .thenComparing(RoomInfo::pwdNeeded)
+//                        .thenComparing(RoomInfo::pwdNeeded)
                         .thenComparing(RoomInfo::getG_time);
             default:
                 throw new Exception("no such condition");
