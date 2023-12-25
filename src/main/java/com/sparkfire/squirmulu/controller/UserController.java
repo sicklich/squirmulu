@@ -108,8 +108,10 @@ public class UserController {
     }
 
     @PostMapping("/owned/pull-img-list")
-    public CommonResponse<List<String>> uploadImage(@RequestBody() MyImgReq req) {
-        return CommonResponse.success(imgDao.getByIDAndType(req.getUserID(), req.getType()).stream().map(file -> httpPath + file).collect(Collectors.toList()));
+    public CommonResponse<List<String>> myImage(@RequestBody() MyImgReq req) {
+        return CommonResponse.success(imgDao.getByIDAndType(req.getId(), req.getType()).stream()
+                .skip(req.getNum_cur()).limit(req.getPage_size()).map(file -> httpPath + file)
+                .collect(Collectors.toList()));
     }
 
     @PostMapping("/user-msg/pull-history-msg")
