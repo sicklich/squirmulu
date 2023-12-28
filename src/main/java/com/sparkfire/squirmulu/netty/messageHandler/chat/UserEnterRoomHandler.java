@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparkfire.squirmulu.dao.MessageDao;
 import com.sparkfire.squirmulu.entity.MessageDB;
+import com.sparkfire.squirmulu.entity.RoomCardUpdateReq;
+import com.sparkfire.squirmulu.entity.RoomCardUpdateTarget;
 import com.sparkfire.squirmulu.entity.RoomInfo;
 import com.sparkfire.squirmulu.netty.handler.MessageHandler;
 import com.sparkfire.squirmulu.netty.message.chat.*;
@@ -19,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 @Component
 public class UserEnterRoomHandler implements MessageHandler<UserEnterRoomRequest> {
@@ -88,6 +92,8 @@ public class UserEnterRoomHandler implements MessageHandler<UserEnterRoomRequest
             } else {
                 sendResponse = sendResponse.setCode(0);
                 channelManager.enterRoom(channel, message.getRoom_id(), message.getUser_id());
+                //另外需要在房间中加入人物卡
+                roomService.updateRoomCard(new RoomCardUpdateReq(message.getRoom_id()+"", message.getCard_id(), message.getUser_id()+"", Arrays.asList(new RoomCardUpdateTarget("join","g_players"))));
             }
             String resBody = objectMapper.writeValueAsString(new Invocation(RoomEnterResponse.TYPE, sendResponse));
             channel.writeAndFlush(new TextWebSocketFrame(resBody));
