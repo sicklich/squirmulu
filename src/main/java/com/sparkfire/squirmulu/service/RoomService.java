@@ -27,12 +27,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 public class RoomService {
-
+    private final ConcurrentHashMap<String, ReentrantLock> roomLocks = new ConcurrentHashMap<>();
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     RoomDao roomDao;
@@ -102,7 +105,7 @@ public class RoomService {
 //            objectNode.put("id", info.getKp_id());
 //            arrayNode.add(objectNode);
             info.setPl_cur(node.get("r_info").get("pl_cur").asInt());
-            info.setPl_cur(node.get("r_info").get("pl_max").asInt());
+            info.setPl_max(node.get("r_info").get("pl_max").asInt());
             info.setR_name(node.get("r_info").get("r_name").asText());
             info.setR_des(node.get("r_info").get("r_des").asText());
             long kpId = node.get("kp_id").asLong();
@@ -129,86 +132,138 @@ public class RoomService {
         return new CommonGameRes(String.valueOf(info.getId()));
     }
 
-    public CommonResponse updateRoomCard(RoomCardUpdateReq req) throws JsonProcessingException {
+    public int getRoomAllRolesNum(String roomId) throws JsonProcessingException {
+        RoomInfo info = getRoomInfo(roomId);
+        JsonNode data = objectMapper.readTree(info.getBody_info());
+        ArrayNode gKeepers = (ArrayNode) data.path("g_gamers").path("g_keepers");
+        return info.getPl_cur() + gKeepers.size() + 1;
+    }
+
+    public boolean roomEnough(String roomId) {
+        RoomInfo info = getRoomInfo(roomId);
+        JsonNode data = null;
+        try {
+            data = objectMapper.readTree(info.getBody_info());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new ServiceException("数据异常", -2);
+        }
+        ArrayNode gKeepers = (ArrayNode) data.path("g_gamers").path("g_keepers");
+        return info.getPl_cur() + gKeepers.size() + 1 > info.getPl_max() + 5;
+    }
+
+    public boolean playerEnough(String roomId) throws JsonProcessingException {
+        RoomInfo info = getRoomInfo(roomId);
+        return info.getPl_cur() >= info.getPl_max() ;
+    }
+
+    public void enterRoom(String roomID, String cardID, String userID){
+        //这里要锁房间查看人数 进行操作
+        roomLocks.putIfAbsent(roomID, new ReentrantLock());
+        ReentrantLock roomLock = roomLocks.get(roomID);
+        try {
+            if (roomLock.tryLock(200, TimeUnit.MILLISECONDS)) {
+                try{
+                    if(!roomEnough(roomID)){
+                        updateRoomCard(new RoomCardUpdateReq(roomID, cardID, userID, Arrays.asList(new RoomCardUpdateTarget("join","g_players"))));
+                    }else{
+                        updateRoomCard(new RoomCardUpdateReq(roomID, cardID, userID, Arrays.asList(new RoomCardUpdateTarget("join","g_audiences"))));
+                    }
+                }finally {
+                    roomLock.unlock();
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            throw new ServiceException("服务器繁忙", -1);
+        }
+
+    }
+
+    public CommonResponse updateRoomCard(RoomCardUpdateReq req) {
         RoomInfo info = getRoomInfo(req.getId());
         // 解析 JSON 字符串
-        JsonNode data = objectMapper.readTree(info.getBody_info());
+        try {
+            JsonNode data = objectMapper.readTree(info.getBody_info());
 
-        for (RoomCardUpdateTarget target : req.getTargets()) {
-            switch (target.getMode()) {
-                case "keep":
-                    ArrayNode gKeepers = (ArrayNode) data.path("g_gamers").path("g_keepers");
-                    ObjectNode newObject = objectMapper.createObjectNode();
-                    newObject.put("id", req.getUser_id());
-                    newObject.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
-                    gKeepers.add(newObject);
+            for (RoomCardUpdateTarget target : req.getTargets()) {
+                switch (target.getMode()) {
+                    case "keep":
+                        ArrayNode gKeepers = (ArrayNode) data.path("g_gamers").path("g_keepers");
+                        ObjectNode newObject = objectMapper.createObjectNode();
+                        newObject.put("id", req.getUser_id());
+                        newObject.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
+                        gKeepers.add(newObject);
 
-                    // 将修改后的数据转换回 JSON 字符串
-                    String updatedJsonStr = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
-                    info.setBody_info(updatedJsonStr);
-                    redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
-                    break;
-                case "join":
-                    ArrayNode target_users = (ArrayNode) data.path("g_gamers").path(target.getTarget());
-                    ObjectNode targetObject = objectMapper.createObjectNode();
-                    targetObject.put("id", req.getUser_id());
-                    targetObject.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
-                    target_users.add(targetObject);
+                        // 将修改后的数据转换回 JSON 字符串
+                        String updatedJsonStr = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+                        info.setBody_info(updatedJsonStr);
+                        redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
+                        break;
+                    case "join":
+                        ArrayNode target_users = (ArrayNode) data.path("g_gamers").path(target.getTarget());
+                        ObjectNode targetObject = objectMapper.createObjectNode();
+                        targetObject.put("id", req.getUser_id());
+                        targetObject.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
+                        target_users.add(targetObject);
 
-                    // 将修改后的数据转换回 JSON 字符串
-                    ArrayNode gamers = (ArrayNode) data.path("g_gamers").path("g_players");
-                    ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
-                    info.setPl_cur(gamers.size());
-                    String updated = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
-                    info.setBody_info(updated);
-                    redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
-                    break;
-                case "kickoff":
-                    ArrayNode target_gamers = (ArrayNode) data.path("g_gamers").path(target.getTarget());
-                    // 遍历 g_keepers 数组并检查每个元素的 Id 值
-                    for (int i = 0; i < target_gamers.size(); i++) {
-                        JsonNode keeper = target_gamers.get(i);
-                        String id = keeper.path("id").asText();
+                        // 将修改后的数据转换回 JSON 字符串
+                        ArrayNode gamers = (ArrayNode) data.path("g_gamers").path("g_players");
+                        ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
+                        info.setPl_cur(gamers.size());
+                        String updated = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+                        info.setBody_info(updated);
+                        redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
+                        break;
+                    case "kickoff":
+                        ArrayNode target_gamers = (ArrayNode) data.path("g_gamers").path(target.getTarget());
+                        // 遍历 g_keepers 数组并检查每个元素的 Id 值
+                        for (int i = 0; i < target_gamers.size(); i++) {
+                            JsonNode keeper = target_gamers.get(i);
+                            String id = keeper.path("id").asText();
 
-                        // 如果找到匹配的元素，则将其删除
-                        if (req.getUser_id().equals(id)) {
-                            target_gamers.remove(i);
-                            break;
+                            // 如果找到匹配的元素，则将其删除
+                            if (req.getUser_id().equals(id)) {
+                                target_gamers.remove(i);
+                                break;
+                            }
                         }
-                    }
-                    gamers = (ArrayNode) data.path("g_gamers").path("g_players");
-                    ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
-                    info.setPl_cur(gamers.size());
-                    break;
-                case "change":
-                    ArrayNode target_objects = (ArrayNode) data.path("g_gamers").path(target.getTarget());
-                    // 遍历 g_keepers 数组并检查每个元素的 Id 值
-                    for (int i = 0; i < target_objects.size(); i++) {
-                        JsonNode keeper = target_objects.get(i);
-                        String id = keeper.path("id").asText();
-                        // 创建一个新的对象
-                        ObjectNode newTarget = objectMapper.createObjectNode();
-                        newTarget.put("id", req.getUser_id());
-                        newTarget.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
+                        gamers = (ArrayNode) data.path("g_gamers").path("g_players");
+                        ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
+                        info.setPl_cur(gamers.size());
+                        break;
+                    case "change":
+                        ArrayNode target_objects = (ArrayNode) data.path("g_gamers").path(target.getTarget());
+                        // 遍历 g_keepers 数组并检查每个元素的 Id 值
+                        for (int i = 0; i < target_objects.size(); i++) {
+                            JsonNode keeper = target_objects.get(i);
+                            String id = keeper.path("id").asText();
+                            // 创建一个新的对象
+                            ObjectNode newTarget = objectMapper.createObjectNode();
+                            newTarget.put("id", req.getUser_id());
+                            newTarget.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
 
-                        // 如果找到匹配的元素，则将其替换为新对象
-                        if (req.getUser_id().equals(id)) {
-                            target_objects.set(i, newTarget);
-                            break;
+                            // 如果找到匹配的元素，则将其替换为新对象
+                            if (req.getUser_id().equals(id)) {
+                                target_objects.set(i, newTarget);
+                                break;
+                            }
                         }
-                    }
-                    // 将修改后的数据转换回 JSON 字符串
-                    gamers = (ArrayNode) data.path("g_gamers").path("g_players");
-                    ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
-                    info.setPl_cur(gamers.size());
-                    String updatedData = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
-                    info.setBody_info(updatedData);
-                    redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
-                    break;
-                default:
-                    break;
+                        // 将修改后的数据转换回 JSON 字符串
+                        gamers = (ArrayNode) data.path("g_gamers").path("g_players");
+                        ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
+                        info.setPl_cur(gamers.size());
+                        String updatedData = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+                        info.setBody_info(updatedData);
+                        redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
+                        break;
+                    default:
+                        break;
 
+                }
             }
+        }catch (JsonProcessingException e){
+            throw new ServiceException("数据错误",-2);
         }
 
 //        ArrayNode target_gamers = (ArrayNode) data.path("g_gamers").path("g_players");

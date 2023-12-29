@@ -2,6 +2,7 @@ package com.sparkfire.squirmulu.controller;
 
 import com.sparkfire.squirmulu.dao.ImgDao;
 import com.sparkfire.squirmulu.entity.Img;
+import com.sparkfire.squirmulu.entity.request.DeleteImgReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.service.ImgService;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
@@ -9,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -74,6 +72,43 @@ public class FileUploadController {
         } catch (IOException e) {
             e.printStackTrace();
             return CommonResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to upload file");
+        }
+    }
+
+    @PostMapping("/delete_img")
+    public CommonResponse deleteImage(@RequestBody DeleteImgReq req, @RequestAttribute("userId") String userId) {
+        // 检查文件名是否为空
+        if (req.getFilename() == null || req.getFilename().isEmpty()) {
+            return CommonResponse.error(-1, "文件名为空");
+        }
+
+        // 指定文件所在的目录
+        String uploadDir = path;
+
+        try {
+            // 获取文件路径
+            Path filePath = Paths.get(uploadDir, req.getFilename());
+
+            // 检查文件是否存在
+            if (!Files.exists(filePath)) {
+                return CommonResponse.error(-2, "文件不存在");
+            }
+
+            // 检查文件是否存在
+            if (!(imgDao.getUserIDByFileName(req.getFilename())+"").equals(userId)) {
+                return CommonResponse.error(-3, "不能删除非自己的图片");
+            }
+
+            // 删除文件
+            Files.delete(filePath);
+
+            // 从数据库中删除文件记录
+            imgDao.delete(req.getFilename());
+
+            return CommonResponse.success(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return CommonResponse.error(-4, "未知错误");
         }
     }
 

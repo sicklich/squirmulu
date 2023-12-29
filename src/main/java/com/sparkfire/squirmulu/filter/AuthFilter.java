@@ -94,6 +94,8 @@ public class AuthFilter implements Filter, Ordered {
             if(!JwtUtils.getUserId(token).equals(httpServletRequest.getHeader(TokenConstants.USERID))){
                 throw new ServiceException(ErrorCode.AUTH_ERROR);
             }
+            // 将 userId 作为请求属性添加到 HttpServletRequest 中
+            request.setAttribute("userId", httpServletRequest.getHeader(TokenConstants.USERID));
         } catch (Exception e) {
             // 自定义异常的类，用户返回给客户端相应的JSON格式的信息
             Result result = Result.fail(ErrorCode.AUTH_ERROR.getCode(), ErrorCode.AUTH_ERROR.getMessage());

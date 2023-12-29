@@ -89,11 +89,13 @@ public class UserEnterRoomHandler implements MessageHandler<UserEnterRoomRequest
                 sendResponse = sendResponse.setCode(2);
                 //加入玩家缓存
                 channelManager.addUser(channel, message.getUser_id()+"");
+            } else if(roomService.roomEnough(message.getRoom_id()+"")){
+                sendResponse = sendResponse.setCode(3);
             } else {
                 sendResponse = sendResponse.setCode(0);
                 channelManager.enterRoom(channel, message.getRoom_id(), message.getUser_id());
                 //另外需要在房间中加入人物卡
-                roomService.updateRoomCard(new RoomCardUpdateReq(message.getRoom_id()+"", message.getCard_id(), message.getUser_id()+"", Arrays.asList(new RoomCardUpdateTarget("join","g_players"))));
+                roomService.enterRoom(message.getRoom_id()+"", message.getCard_id(), message.getUser_id()+"");
             }
             String resBody = objectMapper.writeValueAsString(new Invocation(RoomEnterResponse.TYPE, sendResponse));
             channel.writeAndFlush(new TextWebSocketFrame(resBody));
