@@ -85,6 +85,16 @@ public class SysUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    public SysUser() {
+    }
+
+    public SysUser(String email, String pwd, String telephone, String nickname) {
+        this.email = email;
+        this.pwd = pwd;
+        this.telephone = telephone;
+        this.nickname = nickname;
+    }
+
     public Long getId()
     {
         return id;
