@@ -166,6 +166,10 @@ public class RedisClient {
         }
     }
 
+    public <T> Long zAddAll(String key, Set<ZSetOperations.TypedTuple<String>> tuples) {
+        return redisTemplate.opsForZSet().add(key, tuples);
+    }
+
     public <T> Long zRemove(String key, T value, Class<T> clazz) {
         try {
             String jsonValue = objectMapper.writeValueAsString(value);

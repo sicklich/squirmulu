@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.config.RoomStatus;
 import com.sparkfire.squirmulu.dao.CardDao;
+import com.sparkfire.squirmulu.dao.ChatDao;
 import com.sparkfire.squirmulu.dao.RoomDao;
 import com.sparkfire.squirmulu.entity.*;
 import com.sparkfire.squirmulu.entity.request.ChatListReq;
@@ -24,8 +25,14 @@ import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.DefaultTypedTuple;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +55,9 @@ public class RoomService {
 
     @Autowired
     CardDao cardDao;
+
+    @Autowired
+    ChatDao chatDao;
 
 //    @Autowired
 //    RoomSearchService roomSearchService;
@@ -295,8 +305,30 @@ public class RoomService {
         String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + req.getRoom_id();
         long start = req.getNum_cur();
         long end = start + req.getPage_size() - 1;
-        return redisClient.zRevRange(key, start, end, ChatSendToAll.class).stream().sorted(Comparator.comparing(ChatSendToAll::getP_time).reversed()).collect(Collectors.toList());
+        List<ChatSendToAll> chats = redisClient.zRevRange(key, start, end, ChatSendToAll.class).stream()
+                .sorted(Comparator.comparing(ChatSendToAll::getP_time).reversed()).collect(Collectors.toList());
 
+        if(chats.isEmpty()){
+            RoomInfo info = getRoomInfo(req.getRoom_id()+"");
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(info.getCreate_time()), ZoneId.systemDefault());
+
+            // 使用 DateTimeFormatter 格式化日期为 "yyyymm"
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+            String formatted = dateTime.format(formatter);
+            chats = chatDao.findByPage("chat_"+formatted , req.getRoom_id(), req.getChat_type(), (int)start, req.getPage_size());
+            if(!chats.isEmpty()){
+                Set<ZSetOperations.TypedTuple<String>> tuples = new HashSet<>();
+                for(ChatSendToAll chat:chats){
+                    try {
+                        tuples.add(new DefaultTypedTuple<>(objectMapper.writeValueAsString(chat), (double)chat.getP_time()));
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                redisClient.zAddAll(key, tuples);
+            }
+        }
+        return chats;
     }
 
     private String getAuthRole(String body, long userID) {

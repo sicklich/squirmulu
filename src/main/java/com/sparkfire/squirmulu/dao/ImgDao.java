@@ -14,7 +14,7 @@ public interface ImgDao {
     @Delete("DELETE FROM img where file=#{file}")
     void delete(@Param("file") String file);
 
-    @Select("SELECT file FROM img WHERE userID=#{userID} and type=#{type}")
+    @Select("SELECT file FROM img WHERE userID=#{userID} and type=#{type} order by c_time desc")
     List<String> getByIDAndType(@Param("userID") long userID, @Param("type") int type);
 
     @Select("SELECT userID FROM img WHERE file=#{file}")

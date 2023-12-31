@@ -38,17 +38,17 @@ public class SysUserServiceImpl implements SysUserService {
 
         SysUser user = sysUserMapper.getSysUserInfoByEmail(sysUser.getEmail());
         if (Objects.nonNull(user)) {
-            throw new ServiceException("该邮箱已注册");
+            throw new ServiceException("该邮箱已注册", -2);
         }
 
         if (StrUtil.isBlank(sysUser.getPwd())) {
-            throw new ServiceException("密码不能为空");
+            throw new ServiceException("密码不能为空", -3);
         }
         if (!PhoneUtil.isMobile(sysUser.getTelephone())) {
-            throw new ServiceException("手机号输入错误");
+            throw new ServiceException("手机号输入错误", -3);
         }
         if (StrUtil.isBlank(sysUser.getNickname())) {
-            throw new ServiceException("昵称不能为空");
+            throw new ServiceException("昵称不能为空", -3);
         }
         sysUser.setCreateTime(new Date());
         sysUser.setAuth(1);
