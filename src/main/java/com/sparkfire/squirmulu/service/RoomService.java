@@ -241,24 +241,48 @@ public class RoomService {
                         gamers = (ArrayNode) data.path("g_gamers").path("g_players");
                         ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
                         info.setPl_cur(gamers.size());
+                        String updatedKick = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+                        info.setBody_info(updatedKick);
+                        redisClient.addObject(RedisClient.room_list, String.valueOf(info.getId()), info);
                         break;
                     case "change":
                         ArrayNode target_objects = (ArrayNode) data.path("g_gamers").path(target.getTarget());
-                        // 遍历 g_keepers 数组并检查每个元素的 Id 值
-                        for (int i = 0; i < target_objects.size(); i++) {
-                            JsonNode keeper = target_objects.get(i);
-                            String id = keeper.path("id").asText();
-                            // 创建一个新的对象
-                            ObjectNode newTarget = objectMapper.createObjectNode();
-                            newTarget.put("id", req.getUser_id());
-                            newTarget.set("rolecard", objectMapper.readTree(cardDao.getRoleCardByID(Long.parseLong(req.getCard_id()))));
 
-                            // 如果找到匹配的元素，则将其替换为新对象
-                            if (req.getUser_id().equals(id)) {
-                                target_objects.set(i, newTarget);
-                                break;
+                        ArrayNode[] objectArrays = new ArrayNode[] {
+                                (ArrayNode) data.path("g_gamers").path("g_keepers"),
+                                (ArrayNode) data.path("g_gamers").path("g_players"),
+                                (ArrayNode) data.path("g_gamers").path("g_audiences")
+                        };
+
+                        String[] targets = new String[] {"g_keepers", "g_players", "g_audiences"};
+
+                        boolean find = false;
+                        JsonNode targetObj = null;
+
+                        for (int j = 0; j < objectArrays.length && !find; j++) {
+                            ArrayNode currentArray = objectArrays[j];
+                            for (int i = 0; i < currentArray.size(); i++) {
+                                JsonNode obj = currentArray.get(i);
+                                String id = obj.path("id").asText();
+
+                                if (req.getUser_id().equals(id)) {
+                                    if (target.getTarget().equals(targets[j])) {
+                                        throw new Exception();
+                                    }
+                                    find = true;
+                                    targetObj = obj;
+                                    currentArray.remove(i);
+                                    break;
+                                }
                             }
                         }
+
+                        if(!find){
+                            throw new Exception();
+                        }
+
+                        target_objects.add(targetObj);
+
                         // 将修改后的数据转换回 JSON 字符串
                         gamers = (ArrayNode) data.path("g_gamers").path("g_players");
                         ((ObjectNode) data.get("r_info")).put("pl_cur", gamers.size());
@@ -272,7 +296,7 @@ public class RoomService {
 
                 }
             }
-        }catch (JsonProcessingException e){
+        }catch (Exception e){
             throw new ServiceException("数据错误",-2);
         }
 
