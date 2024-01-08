@@ -23,13 +23,16 @@ public class UserEnterRoomNtf implements Message {
     private String card_id;
     private long request_time;
 
-    public UserEnterRoomNtf(long room_id, long user_id, String roomname, String nickname, String card_id, long request_time) {
+    private String enter_mode;
+
+    public UserEnterRoomNtf(long room_id, long user_id, String roomname, String nickname, String card_id, long request_time, String enter_mode) {
         this.room_id = room_id;
         this.user_id = user_id;
         this.roomname = roomname;
         this.nickname = nickname;
         this.card_id = card_id;
         this.request_time = request_time;
+        this.enter_mode = enter_mode;
     }
 
     public UserEnterRoomNtf() {
@@ -81,5 +84,13 @@ public class UserEnterRoomNtf implements Message {
 
     public void setUser_id(long user_id) {
         this.user_id = user_id;
+    }
+
+    public String getEnter_mode() {
+        return enter_mode;
+    }
+
+    public void setEnter_mode(String enter_mode) {
+        this.enter_mode = enter_mode;
     }
 }

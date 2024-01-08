@@ -73,7 +73,7 @@ public class UserEnterRoomHandler implements MessageHandler<UserEnterRoomRequest
 //                    return;
 //                }
                 UserEnterRoomNtf ntf = new UserEnterRoomNtf(message.getRoom_id(), message.getUser_id(), message.getRoomname()
-                        , message.getNickname(), message.getCard_id(), System.currentTimeMillis() / 1000);
+                        , message.getNickname(), message.getCard_id(), System.currentTimeMillis() / 1000, message.getEnter_mode());
                 String ntfBody = objectMapper.writeValueAsString(new Invocation(UserEnterRoomNtf.TYPE, ntf));
                 if(kpChannel != null) {
                     kpChannel.writeAndFlush(new TextWebSocketFrame(ntfBody));

@@ -22,7 +22,7 @@ public class UserEnterRoomRequest implements Message {
     private String roomname;
     private String nickname;
     private String card_id;
-    private String enter_mode;
+    private String enter_mode = "";
 
     public UserEnterRoomRequest(long room_id, long user_id, String roomname, String nickname, String card_id, String enter_mode) {
         this.room_id = room_id;
