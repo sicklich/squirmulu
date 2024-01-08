@@ -95,7 +95,7 @@ public class UserEnterRoomHandler implements MessageHandler<UserEnterRoomRequest
                 sendResponse = sendResponse.setCode(0);
                 channelManager.enterRoom(channel, message.getRoom_id(), message.getUser_id());
                 //另外需要在房间中加入人物卡
-                roomService.enterRoom(message.getRoom_id()+"", message.getCard_id(), message.getUser_id()+"");
+                roomService.enterRoom(message.getRoom_id()+"", message.getCard_id(), message.getUser_id()+"", message.getEnter_mode());
             }
             String resBody = objectMapper.writeValueAsString(new Invocation(RoomEnterResponse.TYPE, sendResponse));
             channel.writeAndFlush(new TextWebSocketFrame(resBody));

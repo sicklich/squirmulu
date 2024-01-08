@@ -64,7 +64,7 @@ public class UserEnterRoomApproveHandler implements MessageHandler<RoomEnterAppr
                 //更改之前的消息的状态
                 messageDao.update(1,Long.parseLong(message.getNtfMsgId()));
                 //另外需要在房间中加入人物卡
-                roomService.enterRoom(message.getRoom_id(), message.getCard_id(), message.getUser_id());
+                roomService.enterRoom(message.getRoom_id(), message.getCard_id(), message.getUser_id(), message.getEnter_mode());
 
             } else {
                 //这个发给房主

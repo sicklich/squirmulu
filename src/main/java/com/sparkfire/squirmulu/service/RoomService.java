@@ -167,14 +167,14 @@ public class RoomService {
         return info.getPl_cur() >= info.getPl_max() ;
     }
 
-    public void enterRoom(String roomID, String cardID, String userID){
+    public void enterRoom(String roomID, String cardID, String userID, String enter_mode){
         //这里要锁房间查看人数 进行操作
         roomLocks.putIfAbsent(roomID, new ReentrantLock());
         ReentrantLock roomLock = roomLocks.get(roomID);
         try {
             if (roomLock.tryLock(200, TimeUnit.MILLISECONDS)) {
                 try{
-                    if(!roomEnough(roomID)){
+                    if(!roomEnough(roomID) && !enter_mode.equals("AU")){
                         updateRoomCard(new RoomCardUpdateReq(roomID, cardID, userID, Arrays.asList(new RoomCardUpdateTarget("join","g_players"))));
                     }else{
                         updateRoomCard(new RoomCardUpdateReq(roomID, cardID, userID, Arrays.asList(new RoomCardUpdateTarget("join","g_audiences"))));

@@ -22,16 +22,16 @@ public class UserEnterRoomRequest implements Message {
     private String roomname;
     private String nickname;
     private String card_id;
+    private String enter_mode;
 
-    public UserEnterRoomRequest(long room_id, long user_id, String roomname, String nickname, String card_id) {
+    public UserEnterRoomRequest(long room_id, long user_id, String roomname, String nickname, String card_id, String enter_mode) {
         this.room_id = room_id;
         this.user_id = user_id;
         this.roomname = roomname;
         this.nickname = nickname;
         this.card_id = card_id;
+        this.enter_mode = enter_mode;
     }
-
-
 
     public UserEnterRoomRequest() {
     }
@@ -74,5 +74,13 @@ public class UserEnterRoomRequest implements Message {
 
     public void setUser_id(long user_id) {
         this.user_id = user_id;
+    }
+
+    public String getEnter_mode() {
+        return enter_mode;
+    }
+
+    public void setEnter_mode(String enter_mode) {
+        this.enter_mode = enter_mode;
     }
 }
