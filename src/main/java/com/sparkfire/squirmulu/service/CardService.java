@@ -72,7 +72,7 @@ public class CardService {
     }
 
 
-    public CommonGameRes updateNpcCard(IndexBody body) throws JsonProcessingException {
+    public CommonGameRes updateNpcCard(IndexBody body) {
         NpcCard card = npcCardDao.get(body.getId());
         String edited = JsonUtil.updateKeyForJsonBody(card.getBody_info(), body.getTargets());
         card.setBody_info(edited);

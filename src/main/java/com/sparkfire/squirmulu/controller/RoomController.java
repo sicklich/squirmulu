@@ -31,7 +31,7 @@ public class RoomController {
 
     @RequestMapping("/game-deal/new-room")
     public CommonResponse new_room(@RequestBody RoomInfo info) throws UnsupportedEncodingException {
-        System.out.println("body_info:"+info.getBody_info()+"time:"+System.currentTimeMillis()/1000);
+        System.out.println("body_info:" + info.getBody_info() + "time:" + System.currentTimeMillis() / 1000);
 //        String decodedUrl = URLDecoder.decode(info.getBody_info(), StandardCharsets.UTF_8);
 //        info.setBody_info(decodedUrl);
         return CommonResponse.success(roomService.createRoom(info));
@@ -44,7 +44,7 @@ public class RoomController {
 
     @RequestMapping("/game-deal/update-room")
     public CommonResponse update_room(@RequestBody IndexBody indexBody) throws JsonProcessingException {
-        System.out.println("id:"+indexBody.getId()+"time:"+System.currentTimeMillis()/1000);
+        System.out.println("id:" + indexBody.getId() + "time:" + System.currentTimeMillis() / 1000);
         return CommonResponse.success(roomService.updateRoom(indexBody));
     }
 
@@ -61,8 +61,8 @@ public class RoomController {
     @RequestMapping("/game-into/chat-list")
     public CommonResponse pull_info(@RequestBody ChatListReq req) throws JsonProcessingException {
         return CommonResponse.success(roomService.getChatList(req).stream()
-                .map(chat->new ChatSendToAllWithIDString(chat.getId()+"", chat.getP_channel(), chat.getP_time(), chat.getC_content()
-                        ,chat.getA_name(),chat.getA_img(),chat.getRoom_id(),chat.getUser_id(),chat.getC_type(),chat.getChat_type())).collect(Collectors.toList()));
+                .map(chat -> new ChatSendToAllWithIDString(chat.getId() + "", chat.getP_channel(), chat.getP_time(), chat.getC_content()
+                        , chat.getA_name(), chat.getA_img(), chat.getRoom_id() + "", chat.getUser_id(), chat.getC_type(), chat.getChat_type())).collect(Collectors.toList()));
     }
 
     @RequestMapping("/game-deal/publish-room")
@@ -72,7 +72,7 @@ public class RoomController {
 
     @RequestMapping("/game-list/pull-condition")
     public CommonResponse pull_condition(@RequestBody RoomListReq req) {
-        return CommonResponse.success(roomService.getRoomList(RoomListCondition.getByValue(req.getCondition()),req.getPage_cur(),req.getPage_size()));
+        return CommonResponse.success(roomService.getRoomList(RoomListCondition.getByValue(req.getCondition()), req.getPage_cur(), req.getPage_size()));
     }
 
     @RequestMapping("/game-list/pull-search")

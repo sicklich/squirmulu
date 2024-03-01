@@ -22,7 +22,7 @@ public class ChatSendToAllWithIDString implements Message {
     private String c_content;
     private String a_name;
     private String a_img;
-    private long room_id;
+    private String room_id;
     private long user_id;
     private String c_type;
 
@@ -31,7 +31,7 @@ public class ChatSendToAllWithIDString implements Message {
     public ChatSendToAllWithIDString() {
     }
 
-    public ChatSendToAllWithIDString(String id, int p_channel, long p_time, String c_content, String a_name, String a_img, long room_id, long user_id, String c_type, int chat_type) {
+    public ChatSendToAllWithIDString(String id, int p_channel, long p_time, String c_content, String a_name, String a_img, String room_id, long user_id, String c_type, int chat_type) {
         this.id = id;
         this.p_channel = p_channel;
         this.p_time = p_time;
@@ -92,11 +92,11 @@ public class ChatSendToAllWithIDString implements Message {
         this.a_img = a_img;
     }
 
-    public long getRoom_id() {
+    public String getRoom_id() {
         return room_id;
     }
 
-    public void setRoom_id(long room_id) {
+    public void setRoom_id(String room_id) {
         this.room_id = room_id;
     }
 

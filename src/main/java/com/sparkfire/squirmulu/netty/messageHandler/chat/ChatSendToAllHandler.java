@@ -84,7 +84,7 @@ public class ChatSendToAllHandler implements MessageHandler<ChatSendToAll> {
             try {
                 System.out.println("chat_to_all"+userChannel.id());
                 userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new ChatSendToAllWithIDString(message.getId()+"", message.getP_channel(), message.getP_time(), message.getC_content()
-                        ,message.getA_name(),message.getA_img(),message.getRoom_id(),message.getUser_id(),message.getC_type(),message.getChat_type()))));
+                        ,message.getA_name(),message.getA_img(),message.getRoom_id() + "",message.getUser_id(),message.getC_type(),message.getChat_type()))));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }

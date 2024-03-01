@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparkfire.squirmulu.dao.ChatDao;
 import com.sparkfire.squirmulu.entity.RoomInfo;
 import com.sparkfire.squirmulu.netty.handler.MessageHandler;
-import com.sparkfire.squirmulu.netty.message.chat.ChatDelete;
-import com.sparkfire.squirmulu.netty.message.chat.ChatDeleteResponse;
-import com.sparkfire.squirmulu.netty.message.chat.ChatSendResponse;
-import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAll;
+import com.sparkfire.squirmulu.netty.message.chat.*;
 import com.sparkfire.squirmulu.netty.service.Invocation;
 import com.sparkfire.squirmulu.netty.service.NettyChannelManager;
 import com.sparkfire.squirmulu.service.RoomService;
@@ -56,7 +53,7 @@ public class ChatDeleteHandler implements MessageHandler<ChatDelete> {
 
         //记录到数据库  分表
         // 将秒级时间戳转换为 LocalDateTime
-        RoomInfo info = roomService.getRoomInfo(message.getRoom_id()+"");
+        RoomInfo info = roomService.getRoomInfo(message.getRoom_id() + "");
         LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(info.getCreate_time()), ZoneId.systemDefault());
 
         // 使用 DateTimeFormatter 格式化日期为 "yyyymm"
@@ -70,7 +67,7 @@ public class ChatDeleteHandler implements MessageHandler<ChatDelete> {
 
         // 创建转发的消息，并广播发送
         Set<Channel> channels = nettyChannelManager.getRoomChannel(message.getRoom_id());
-        for(Channel userChannel : channels){
+        for (Channel userChannel : channels) {
             try {
                 userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(ChatDelete.TYPE, message))));
             } catch (JsonProcessingException e) {
@@ -79,7 +76,9 @@ public class ChatDeleteHandler implements MessageHandler<ChatDelete> {
         }
 
         try {
-            channel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(ChatDeleteResponse.TYPE, response))));
+            channel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(
+                    new Invocation(ChatDeleteWithIDString.TYPE, new ChatDeleteWithIDString(
+                            message.getId() + "", message.getChat_type(), message.getRoom_id() + "", message.getC_type())))));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
