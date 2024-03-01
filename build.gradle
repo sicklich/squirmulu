@@ -48,6 +48,8 @@ dependencies {
 	implementation group: 'cn.hutool', name: 'hutool-all', version: '5.8.5'
 	implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
 //	dependencies {
 //		implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 //		implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:6.8.23' // 使用与您的 Elasticsearch 版本匹配的客户端版本

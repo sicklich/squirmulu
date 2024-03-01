@@ -37,7 +37,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         if (frame instanceof TextWebSocketFrame) {
             String request = ((TextWebSocketFrame) frame).text();
             Invocation invocation = mapper.readValue(request,Invocation.class);
-            System.out.println("Received message: " + invocation.getMessage());
+            System.out.println("Received message: " + invocation.getMessage() + "type:" + invocation.getType());
             // 获得 type 对应的 MessageHandler 处理器
             MessageHandler messageHandler = messageHandlerContainer.getMessageHandler(invocation.getType());
             // 获得  MessageHandler 处理器 的消息类
@@ -50,8 +50,6 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
                 messageHandler.execute(ctx.channel(), message);
             });
 
-            // 发送响应消息
-            ctx.channel().writeAndFlush(new TextWebSocketFrame("Message received: "));
         } else {
             // 不支持的帧类型
             String message = "Unsupported frame type: " + frame.getClass().getName();

@@ -164,22 +164,24 @@ public class RoomService {
 
     public boolean playerEnough(String roomId) throws JsonProcessingException {
         RoomInfo info = getRoomInfo(roomId);
-        return info.getPl_cur() >= info.getPl_max() ;
+        return info.getPl_cur() >= info.getPl_max();
     }
 
-    public void enterRoom(String roomID, String cardID, String userID, String enter_mode){
+    public void enterRoom(String roomID, String cardID, String userID, String enter_mode) {
         //这里要锁房间查看人数 进行操作
         roomLocks.putIfAbsent(roomID, new ReentrantLock());
         ReentrantLock roomLock = roomLocks.get(roomID);
         try {
             if (roomLock.tryLock(200, TimeUnit.MILLISECONDS)) {
-                try{
-                    if(!roomEnough(roomID) && !enter_mode.equals("AU")){
-                        updateRoomCard(new RoomCardUpdateReq(roomID, cardID, userID, Arrays.asList(new RoomCardUpdateTarget("join","g_players"))));
-                    }else{
-                        updateRoomCard(new RoomCardUpdateReq(roomID, cardID, userID, Arrays.asList(new RoomCardUpdateTarget("join","g_audiences"))));
+                try {
+                    if (!userInRoom(roomID, userID)) {
+                        if (!roomEnough(roomID) && !enter_mode.equals("AU")) {
+                            updateRoomCard(new RoomCardUpdateReq(roomID, cardID, userID, Arrays.asList(new RoomCardUpdateTarget("join", "g_players"))));
+                        } else {
+                            updateRoomCard(new RoomCardUpdateReq(roomID, cardID, userID, Arrays.asList(new RoomCardUpdateTarget("join", "g_audiences"))));
+                        }
                     }
-                }finally {
+                } finally {
                     roomLock.unlock();
                 }
             }
@@ -248,13 +250,13 @@ public class RoomService {
                     case "change":
                         ArrayNode target_objects = (ArrayNode) data.path("g_gamers").path(target.getTarget());
 
-                        ArrayNode[] objectArrays = new ArrayNode[] {
+                        ArrayNode[] objectArrays = new ArrayNode[]{
                                 (ArrayNode) data.path("g_gamers").path("g_keepers"),
                                 (ArrayNode) data.path("g_gamers").path("g_players"),
                                 (ArrayNode) data.path("g_gamers").path("g_audiences")
                         };
 
-                        String[] targets = new String[] {"g_keepers", "g_players", "g_audiences"};
+                        String[] targets = new String[]{"g_keepers", "g_players", "g_audiences"};
 
                         boolean find = false;
                         JsonNode targetObj = null;
@@ -277,7 +279,7 @@ public class RoomService {
                             }
                         }
 
-                        if(!find){
+                        if (!find) {
                             throw new Exception();
                         }
 
@@ -296,8 +298,8 @@ public class RoomService {
 
                 }
             }
-        }catch (Exception e){
-            throw new ServiceException("数据错误",-2);
+        } catch (Exception e) {
+            throw new ServiceException("数据错误", -2);
         }
 
 //        ArrayNode target_gamers = (ArrayNode) data.path("g_gamers").path("g_players");
@@ -332,19 +334,19 @@ public class RoomService {
         List<ChatSendToAll> chats = redisClient.zRevRange(key, start, end, ChatSendToAll.class).stream()
                 .sorted(Comparator.comparing(ChatSendToAll::getP_time).reversed()).collect(Collectors.toList());
 
-        if(chats.isEmpty()){
-            RoomInfo info = getRoomInfo(req.getRoom_id()+"");
+        if (chats.isEmpty()) {
+            RoomInfo info = getRoomInfo(req.getRoom_id() + "");
             LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(info.getCreate_time()), ZoneId.systemDefault());
 
             // 使用 DateTimeFormatter 格式化日期为 "yyyymm"
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
             String formatted = dateTime.format(formatter);
-            chats = chatDao.findByPage("chat_"+formatted , req.getRoom_id(), req.getChat_type(), (int)start, req.getPage_size());
-            if(!chats.isEmpty()){
+            chats = chatDao.findByPage("chat_" + formatted, req.getRoom_id(), req.getChat_type(), (int) start, req.getPage_size());
+            if (!chats.isEmpty()) {
                 Set<ZSetOperations.TypedTuple<String>> tuples = new HashSet<>();
-                for(ChatSendToAll chat:chats){
+                for (ChatSendToAll chat : chats) {
                     try {
-                        tuples.add(new DefaultTypedTuple<>(objectMapper.writeValueAsString(chat), (double)chat.getP_time()));
+                        tuples.add(new DefaultTypedTuple<>(objectMapper.writeValueAsString(chat), (double) chat.getP_time()));
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
@@ -407,7 +409,7 @@ public class RoomService {
                             , idString -> roomDao.getByIDs(idString).stream()
                                     .peek(this::processBaseInfo)
                                     .collect(Collectors.toList())
-                            ).stream()
+                    ).stream()
 //                    .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
                     .map(roomInfo -> new GameListElement(roomInfo.getId(), roomInfo.getPwd(), JsonUtil.get(roomInfo.getBody_info(), "r_info")))
                     .skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList()));
@@ -421,7 +423,7 @@ public class RoomService {
         //redis 获取 排序
         try {
             return new RoomListRes(redisClient.getAllObjects(RedisClient.room_list, RoomInfo.class
-                    , () -> roomDao.getAll().stream().collect(Collectors.toMap(RoomInfo::getId, Function.identity())))
+                            , () -> roomDao.getAll().stream().collect(Collectors.toMap(RoomInfo::getId, Function.identity())))
                     .stream().peek(roomInfo -> logger.info("room id{}, status{}", roomInfo.getId(), roomInfo.getStatus()))
                     .peek(this::processBaseInfo)
                     .filter(room -> room.getStatus() == RoomStatus.RECRUITING.getStatusValue())
@@ -440,19 +442,19 @@ public class RoomService {
         list = list.stream().filter(room -> roomForSomeone(room.getBody_info(), req.getId(), req.getType()))
                 .peek(this::processBaseInfo)
                 .map(room -> {
-            String bodyinfo = room.getBody_info();
-            try {
-                JsonNode node = objectMapper.readTree(bodyinfo);
-                if (node.isObject()) {
-                    ObjectNode objectNode = (ObjectNode) node;
-                    objectNode.retain("r_info"); // 仅保留目标键值对
-                    room.setBody_info(objectMapper.writeValueAsString(objectNode));
-                }
-                return room;
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }).sorted(Comparator.comparing(RoomInfo::getEdit_time)).skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
+                    String bodyinfo = room.getBody_info();
+                    try {
+                        JsonNode node = objectMapper.readTree(bodyinfo);
+                        if (node.isObject()) {
+                            ObjectNode objectNode = (ObjectNode) node;
+                            objectNode.retain("r_info"); // 仅保留目标键值对
+                            room.setBody_info(objectMapper.writeValueAsString(objectNode));
+                        }
+                        return room;
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).sorted(Comparator.comparing(RoomInfo::getEdit_time).reversed()).skip((long) (req.getPage_cur() - 1) * req.getPage_size()).limit(req.getPage_size()).collect(Collectors.toList());
 
         return CommonResponse.success(list);
 
@@ -502,16 +504,21 @@ public class RoomService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        if (type.equals("created")) {
-            return node.get("kp_id").asLong() == id;
-        }
+//        if (type.equals("created")) {
+//            return node.get("kp_id").asLong() == id;
+//        }
         String key = "";
         switch (type) {
+            case "created":
+                return node.get("kp_id").asLong() == id;
             case "join":
                 key = "g_players";
                 break;
             case "onlook":
                 key = "g_audiences";
+                break;
+            case "host":
+                key = "g_keepers";
                 break;
             default:
                 throw new ServiceException("不支持的查询类型");
@@ -521,10 +528,18 @@ public class RoomService {
         Iterator<JsonNode> iterator = arrayNode.elements();
 
         // 遍历迭代器以访问数组中的每个元素
+        boolean find = false;
         while (iterator.hasNext()) {
             JsonNode element = iterator.next();
-            if (element.get("rolecard").get("a_setting").get("card_user").asLong() == id) return true;
+            if (element.get("rolecard").get("a_setting").get("card_user").asLong() == id) {
+                find = true;
+                break;
+            }
         }
-        return false;
+        if(!type.equals("host")){
+            return find;
+        }else{
+            return find || node.get("kp_id").asLong() == id;
+        }
     }
 }

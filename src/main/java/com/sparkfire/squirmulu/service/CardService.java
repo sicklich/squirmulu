@@ -80,10 +80,17 @@ public class CardService {
         return new CommonGameRes(String.valueOf(body.getId()));
     }
 
-    public CommonGameRes updatePlayerCard(IndexBody body) throws JsonProcessingException {
+    public CommonGameRes updatePlayerCard(IndexBody body, long userId) {
         PlayerCard card = cardDao.get(body.getId());
+        if(null == card){
+            throw new ServiceException("人物卡不存在！");
+        }
+        if(card.getCard_user() != userId){
+            throw new ServiceException("无法修改他人的人物卡！");
+        }
         String edited = JsonUtil.updateKeyForJsonBody(card.getRole_card(), body.getTargets());
         card.setRole_card(edited);
+        card.setM_time(System.currentTimeMillis()/1000);
         cardDao.update(card);
         return new CommonGameRes(String.valueOf(body.getId()));
     }
@@ -93,20 +100,20 @@ public class CardService {
         return CommonResponse.success(new PlayerCardIDString(String.valueOf(card.getId()),card.getCard_creator(),card.getC_time(),card.getM_time(),card.getRole_card()));
     }
 
-    public CommonResponse myCardList(MyPlayerCardListReq req) {
+    public CommonResponse myCardList(MyPlayerCardListReq req, long userID) {
         if (!req.getType().equals("player")) {
             throw new ServiceException("不支持的查询类型");
         }
-        List<PlayerCard> lists = cardDao.getAll();
-        List<PlayerCardIDString> list = lists.stream().filter(card -> {
-                    String bodyinfo = card.getRole_card();
-                    try {
-                        JsonNode node = objectMapper.readTree(bodyinfo);
-                        return node.get("a_setting").get("card_user").asLong() == req.getId();
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).map(card -> {
+//        lists.stream().filter(card -> {
+//            String bodyinfo = card.getRole_card();
+//            try {
+//                JsonNode node = objectMapper.readTree(bodyinfo);
+//                return node.get("a_setting").get("card_user").asLong() == req.getId();
+//            } catch (JsonProcessingException e) {
+//                throw new RuntimeException(e);
+//            }
+//        })
+        List<PlayerCardIDString> list = cardDao.getByCardUser(userID).stream().map(card -> {
                     String bodyinfo = card.getRole_card();
                     try {
                         JsonNode node = objectMapper.readTree(bodyinfo);

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -124,8 +125,9 @@ public class UserController {
     }
 
     @RequestMapping("/user-card/pull-rolecard-list")
-    public CommonResponse my_card_list(@RequestBody MyPlayerCardListReq req) throws JsonProcessingException {
-        return cardService.myCardList(req);
+    public CommonResponse my_card_list(@RequestBody MyPlayerCardListReq req, HttpServletRequest request) throws JsonProcessingException {
+        String userId = (String) request.getAttribute("userId");
+        return cardService.myCardList(req, Long.parseLong(userId));
     }
 
     @RequestMapping("/user-room/pull-room-list")

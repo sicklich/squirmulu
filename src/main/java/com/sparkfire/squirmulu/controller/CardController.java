@@ -13,6 +13,8 @@ import com.sparkfire.squirmulu.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("/squ/game")
 //@CrossOrigin(origins = {"http://localhost:8081","http://localhost:5173"})
@@ -51,8 +53,9 @@ public class CardController {
     }
 
     @RequestMapping("/card-player/update-card")
-    public CommonResponse update_player_card(@RequestBody IndexBody indexBody) throws JsonProcessingException {
-        return CommonResponse.success(cardService.updatePlayerCard(indexBody));
+    public CommonResponse update_player_card(@RequestBody IndexBody indexBody, HttpServletRequest request) throws JsonProcessingException {
+        String userId = (String) request.getAttribute("userId");
+        return CommonResponse.success(cardService.updatePlayerCard(indexBody, Long.parseLong(userId)));
     }
 
 }

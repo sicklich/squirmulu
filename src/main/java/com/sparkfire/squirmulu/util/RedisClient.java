@@ -160,6 +160,7 @@ public class RedisClient {
     public <T> Boolean zAdd(String key, T value, double score, Class<T> clazz) {
         try {
             String jsonValue = objectMapper.writeValueAsString(value);
+            System.out.println("addChat:" + jsonValue);
             return redisTemplate.opsForZSet().add(key, jsonValue, score);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error serializing value to JSON", e);
@@ -173,6 +174,7 @@ public class RedisClient {
     public <T> Long zRemove(String key, T value, Class<T> clazz) {
         try {
             String jsonValue = objectMapper.writeValueAsString(value);
+            System.out.println("deleteChat:" + jsonValue);
             return redisTemplate.opsForZSet().remove(key, jsonValue);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error serializing value to JSON", e);

@@ -5,11 +5,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparkfire.squirmulu.dao.ChatDao;
 import com.sparkfire.squirmulu.entity.RoomInfo;
+import com.sparkfire.squirmulu.netty.handler.MessageHandler;
+import com.sparkfire.squirmulu.netty.message.chat.ChatDelete;
+import com.sparkfire.squirmulu.netty.message.chat.ChatDeleteResponse;
 import com.sparkfire.squirmulu.netty.message.chat.ChatSendResponse;
 import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAll;
-import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAllWithIDString;
 import com.sparkfire.squirmulu.netty.service.Invocation;
-import com.sparkfire.squirmulu.netty.handler.MessageHandler;
 import com.sparkfire.squirmulu.netty.service.NettyChannelManager;
 import com.sparkfire.squirmulu.service.RoomService;
 import com.sparkfire.squirmulu.util.RedisClient;
@@ -21,14 +22,12 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Set;
 
 @Component
-public class ChatSendToAllHandler implements MessageHandler<ChatSendToAll> {
+public class ChatDeleteHandler implements MessageHandler<ChatDelete> {
     public static final int CHAT = 1;
     public static final int RECORD = 2;
 
@@ -48,25 +47,12 @@ public class ChatSendToAllHandler implements MessageHandler<ChatSendToAll> {
     private ChatDao chatDao;
 
 
-
     @Override
-    public void execute(Channel channel, ChatSendToAll message) {
-        long msgID = SnowflakeGenerator.nextId();
-        long now = System.currentTimeMillis()/1000;
-        ChatSendResponse sendResponse = new ChatSendResponse().setMsgId(msgID).setCode(0);
-        System.out.println(channel.id());
-        try {
-            channel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(ChatSendResponse.TYPE, sendResponse))));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        message.setId(msgID);
-        message.setP_time(now);
+    public void execute(Channel channel, ChatDelete message) {
+        ChatDeleteResponse response = new ChatDeleteResponse().setId(message.getId()).setCode(0);
 
         String key = (message.getChat_type() == CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + message.getRoom_id();
 
-        //记录到redis
-        redisClient.zAdd(key,message,message.getP_time(), ChatSendToAll.class);
 
         //记录到数据库  分表
         // 将秒级时间戳转换为 LocalDateTime
@@ -76,24 +62,33 @@ public class ChatSendToAllHandler implements MessageHandler<ChatSendToAll> {
         // 使用 DateTimeFormatter 格式化日期为 "yyyymm"
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
         String formatted = dateTime.format(formatter);
-        chatDao.insert("chat_"+formatted, message);
+        ChatSendToAll chat = chatDao.findById("chat_" + formatted, message.getId());
+
+        //从redis删除
+        redisClient.zRemove(key, chat, ChatSendToAll.class);
+        chatDao.delete("chat_" + formatted, message.getId());
 
         // 创建转发的消息，并广播发送
         Set<Channel> channels = nettyChannelManager.getRoomChannel(message.getRoom_id());
         for(Channel userChannel : channels){
             try {
-                System.out.println("chat_to_all"+userChannel.id());
-                userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new ChatSendToAllWithIDString(message.getId()+"", message.getP_channel(), message.getP_time(), message.getC_content()
-                        ,message.getA_name(),message.getA_img(),message.getRoom_id(),message.getUser_id(),message.getC_type(),message.getChat_type()))));
+                userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(ChatDelete.TYPE, message))));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         }
+
+        try {
+            channel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(ChatDeleteResponse.TYPE, response))));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
     public String getType() {
-        return ChatSendToAll.TYPE;
+        return ChatDelete.TYPE;
     }
 
 }
