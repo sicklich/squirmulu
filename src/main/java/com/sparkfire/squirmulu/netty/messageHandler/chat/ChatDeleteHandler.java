@@ -69,7 +69,8 @@ public class ChatDeleteHandler implements MessageHandler<ChatDelete> {
         Set<Channel> channels = nettyChannelManager.getRoomChannel(message.getRoom_id());
         for (Channel userChannel : channels) {
             try {
-                userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(ChatDelete.TYPE, message))));
+                userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(ChatDeleteWithIDString.TYPE, new ChatDeleteWithIDString(
+                        message.getId() + "", message.getChat_type(), message.getRoom_id() + "", message.getC_type())))));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
@@ -77,8 +78,7 @@ public class ChatDeleteHandler implements MessageHandler<ChatDelete> {
 
         try {
             channel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(
-                    new Invocation(ChatDeleteWithIDString.TYPE, new ChatDeleteWithIDString(
-                            message.getId() + "", message.getChat_type(), message.getRoom_id() + "", message.getC_type())))));
+                    new Invocation(ChatDeleteResponse.TYPE, response))));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
