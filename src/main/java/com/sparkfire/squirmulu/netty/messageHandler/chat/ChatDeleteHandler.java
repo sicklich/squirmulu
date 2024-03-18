@@ -62,15 +62,28 @@ public class ChatDeleteHandler implements MessageHandler<ChatDelete> {
         ChatSendToAll chat = chatDao.findById("chat_" + formatted, message.getId());
 
         //从redis删除
-        redisClient.zRemove(key, chat, ChatSendToAll.class);
+        Set<ChatSendToAll> set = redisClient.zRangeByScore(key, chat.getP_time(), chat.getP_time(), ChatSendToAll.class);
+        System.out.println("roomid:"+message.getRoom_id()+"chat size:"+set.size()+" p_time: "+chat.getP_time());
+        if(set.size() == 1){
+            redisClient.zRemoveByScore(key, chat.getP_time(), chat.getP_time());
+        }else{
+            for(ChatSendToAll chatSendToAll : set) {
+                if(chatSendToAll.getId() == chat.getId()) {
+                    redisClient.zRemove(key, chatSendToAll, ChatSendToAll.class);
+                }
+            }
+        }
         chatDao.delete("chat_" + formatted, message.getId());
 
         // 创建转发的消息，并广播发送
         Set<Channel> channels = nettyChannelManager.getRoomChannel(message.getRoom_id());
         for (Channel userChannel : channels) {
+            System.out.println("roomid:"+message.getRoom_id()+"channel size:"+channels.size());
             try {
                 userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(ChatDeleteWithIDString.TYPE, new ChatDeleteWithIDString(
                         message.getId() + "", message.getChat_type(), message.getRoom_id() + "", message.getC_type())))));
+                System.out.println("roomid:"+message.getRoom_id()+"channel:"+userChannel.id());
+//                userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(ChatDelete.TYPE, message))));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }

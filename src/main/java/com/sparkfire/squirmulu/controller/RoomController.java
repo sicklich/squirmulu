@@ -3,12 +3,10 @@ package com.sparkfire.squirmulu.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparkfire.squirmulu.config.RoomListCondition;
 import com.sparkfire.squirmulu.entity.IndexBody;
+import com.sparkfire.squirmulu.entity.IndexBodyForAdd;
 import com.sparkfire.squirmulu.entity.RoomCardUpdateReq;
 import com.sparkfire.squirmulu.entity.RoomInfo;
-import com.sparkfire.squirmulu.entity.request.ChatListReq;
-import com.sparkfire.squirmulu.entity.request.DeleteRoomReq;
-import com.sparkfire.squirmulu.entity.request.RoomListReq;
-import com.sparkfire.squirmulu.entity.request.RoomSearchListReq;
+import com.sparkfire.squirmulu.entity.request.*;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAllWithIDString;
 import com.sparkfire.squirmulu.service.RoomService;
@@ -48,6 +46,12 @@ public class RoomController {
         return CommonResponse.success(roomService.updateRoom(indexBody));
     }
 
+    @RequestMapping("/game-deal/update-new-field")
+    public CommonResponse update_new_field(@RequestBody IndexBodyForAdd indexBody) throws JsonProcessingException {
+        System.out.println("id:"+indexBody.getId()+"time:"+System.currentTimeMillis()/1000);
+        return CommonResponse.success(roomService.addRoomAttr(indexBody));
+    }
+
     @RequestMapping("/game-deal/update-room-card")
     public CommonResponse update_room_card(@RequestBody RoomCardUpdateReq req) throws JsonProcessingException {
         return CommonResponse.success(roomService.updateRoomCard(req));
@@ -63,6 +67,11 @@ public class RoomController {
         return CommonResponse.success(roomService.getChatList(req).stream()
                 .map(chat -> new ChatSendToAllWithIDString(chat.getId() + "", chat.getP_channel(), chat.getP_time(), chat.getC_content()
                         , chat.getA_name(), chat.getA_img(), chat.getRoom_id() + "", chat.getUser_id(), chat.getC_type(), chat.getChat_type())).collect(Collectors.toList()));
+    }
+
+    @RequestMapping("/game-into/clear-msg")
+    public CommonResponse clearMsg(@RequestBody ClearMsgReq req) throws JsonProcessingException {
+        return CommonResponse.success(roomService.clearMsg(req));
     }
 
     @RequestMapping("/game-deal/publish-room")

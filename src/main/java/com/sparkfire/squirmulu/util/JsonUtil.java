@@ -4,9 +4,11 @@ import com.alibaba.fastjson2.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sparkfire.squirmulu.entity.IndexElement;
 import com.sparkfire.squirmulu.entity.IndexTarget;
+import com.sparkfire.squirmulu.entity.IndexTargetForAdd;
 
 import java.util.List;
 
@@ -36,6 +38,53 @@ public class JsonUtil {
                     }
                 } else {
                     String ele = target.getKeys().get(i - 1);
+                    if (tmpNode.isArray()) {
+                        tmpNode = tmpNode.get(Integer.parseInt(ele));
+                    } else {
+                        tmpNode = tmpNode.get(ele);
+                    }
+                }
+            }
+        }
+        return JSON.toJSONString(node);
+    }
+
+    public static String addKeyForJsonBody(String json, List<IndexTargetForAdd> targets) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = null;
+        try {
+            node = mapper.readTree(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        for (IndexTargetForAdd target : targets) {
+            JsonNode jsonObject;
+            try {
+                jsonObject = mapper.readTree(target.getValue());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            JsonNode tmpNode = node;
+            for (int i = 1; i <= target.getLevel(); i++) {
+                System.out.println("level:"+target.getLevel()+" i:"+i);
+                if (i == target.getLevel()) {
+                    if (jsonObject != null) {
+                        if (tmpNode.isArray()) {
+                            System.out.println("size: "+ tmpNode.size()+ "target: "+target.getTarget());
+                            ((ObjectNode)tmpNode.get(Integer.parseInt(target.getTarget()))).set(target.getName(), jsonObject);
+                        } else {
+                            ((ObjectNode)tmpNode.get(target.getTarget())).set(target.getName(), jsonObject);
+                        }
+                    } else {
+                        if (tmpNode.isArray()) {
+                            ((ObjectNode) tmpNode.get(Integer.parseInt(target.getTarget()))).put(target.getName(), target.getValue());
+                        } else {
+                            ((ObjectNode)tmpNode.get(target.getTarget())).put(target.getName(), target.getValue());
+                        }
+                    }
+                } else {
+                    String ele = target.getKeys().get(i - 1);
+                    System.out.println("ele: "+ele);
                     if (tmpNode.isArray()) {
                         tmpNode = tmpNode.get(Integer.parseInt(ele));
                     } else {

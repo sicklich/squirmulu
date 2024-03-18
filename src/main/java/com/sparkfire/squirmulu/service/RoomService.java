@@ -11,10 +11,7 @@ import com.sparkfire.squirmulu.dao.CardDao;
 import com.sparkfire.squirmulu.dao.ChatDao;
 import com.sparkfire.squirmulu.dao.RoomDao;
 import com.sparkfire.squirmulu.entity.*;
-import com.sparkfire.squirmulu.entity.request.ChatListReq;
-import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
-import com.sparkfire.squirmulu.entity.request.MyRoomListReq;
-import com.sparkfire.squirmulu.entity.request.RoomSearchListReq;
+import com.sparkfire.squirmulu.entity.request.*;
 import com.sparkfire.squirmulu.entity.response.*;
 import com.sparkfire.squirmulu.exception.ServiceException;
 import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAll;
@@ -134,6 +131,18 @@ public class RoomService {
         String key = RedisClient.room_list;
         RoomInfo info = getRoomInfo(body.getId() + "");
         String edited = JsonUtil.updateKeyForJsonBody(info.getBody_info(), body.getTargets());
+        info.setBody_info(edited);
+        //todo  需要测试 引用部分需要认真对待
+        processBaseInfo(info);
+        roomDao.update(info);
+        redisClient.addObject(key, String.valueOf(info.getId()), info);
+        return new CommonGameRes(String.valueOf(info.getId()));
+    }
+
+    public CommonGameRes addRoomAttr(IndexBodyForAdd body) {
+        String key = RedisClient.room_list;
+        RoomInfo info = getRoomInfo(body.getId() + "");
+        String edited = JsonUtil.addKeyForJsonBody(info.getBody_info(), body.getTargets());
         info.setBody_info(edited);
         //todo  需要测试 引用部分需要认真对待
         processBaseInfo(info);
@@ -357,6 +366,40 @@ public class RoomService {
         return chats;
     }
 
+    public ClearMsgRes clearMsg(ClearMsgReq req) {
+        String key = (req.getType() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + req.getRoom_id();
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(getRoomInfo(req.getRoom_id() + "").getCreate_time()), ZoneId.systemDefault());
+
+        // 使用 DateTimeFormatter 格式化日期为 "yyyymm"
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+        String formatted = dateTime.format(formatter);
+        if (req.getP_channel() == -1) {
+            redisClient.zClear(key);
+            chatDao.deleteByRoomIdAndType("chat_" + formatted, req.getRoom_id(), req.getType());
+            return new ClearMsgRes(0, req.getRoom_id(), req.getType(), req.getP_channel());
+        }
+        //遍历去删除
+        deleteMsgBatches(key, req.getP_channel());
+        chatDao.deleteByRoomIdAndTypeAndPChannel("chat_" + formatted, req.getRoom_id(), req.getType(), req.getP_channel());
+        return new ClearMsgRes(0, req.getRoom_id(), req.getType(), req.getP_channel());
+    }
+
+    public void deleteMsgBatches(String key, int p_channel) {
+        long size = redisClient.zSize(key);
+        int batchSize = 20;
+
+        for (long start = 0; start < size; start += batchSize) {
+            long end = Math.min(start + batchSize - 1, size - 1);
+            Set<ChatSendToAll> batch = redisClient.zRange(key, start, end, ChatSendToAll.class);
+            // 处理批次中的元素
+            for (ChatSendToAll item : batch) {
+                if(item.getP_channel() == p_channel){
+                    redisClient.zRemove(key, item, ChatSendToAll.class);
+                }
+            }
+        }
+    }
+
     private String getAuthRole(String body, long userID) {
         try {
             JsonNode json = objectMapper.readTree(body);
@@ -384,7 +427,7 @@ public class RoomService {
         RoomInfo room = getRoomInfo(roomInfo.getId());
         room.setStatus(RoomStatus.RECRUITING.getStatusValue());
         logger.info("publish body{}, room id{}, status{}", room.getBody_info(), room.getId(), room.getStatus());
-        String edited = JsonUtil.updateKeyForJsonBody(room.getBody_info(), List.of(new IndexTarget("r_state", 2, List.of("r_info"), String.valueOf(RoomStatus.RECRUITING.getStatusValue()))));
+        String edited = JsonUtil.updateKeyForJsonBody(room.getBody_info(), List.of(new IndexTarget("r_state", 2, List.of("r_info"), String.valueOf(RoomStatus.RECRUITING.getStatusValue()), 0)));
         room.setBody_info(edited);
         processBaseInfo(room);
         redisClient.addObject(key, String.valueOf(room.getId()), room);
@@ -536,9 +579,9 @@ public class RoomService {
                 break;
             }
         }
-        if(!type.equals("host")){
+        if (!type.equals("host")) {
             return find;
-        }else{
+        } else {
             return find || node.get("kp_id").asLong() == id;
         }
     }

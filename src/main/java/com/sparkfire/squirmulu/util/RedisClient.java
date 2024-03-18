@@ -181,6 +181,10 @@ public class RedisClient {
         }
     }
 
+    public Long zRemoveByScore(String key, double min, double max) {
+        return redisTemplate.opsForZSet().removeRangeByScore(key, min, max);
+    }
+
     public <T> Set<T> zRange(String key, long start, long end, Class<T> clazz) {
         ZSetOperations<String, String> zSetOp = redisTemplate.opsForZSet();
         Set<String> jsonStringSet = redisTemplate.opsForZSet().range(key, start, end);
@@ -196,6 +200,14 @@ public class RedisClient {
     public <T> Set<T> zRangeByScore(String key, double minScore, double maxScore, Class<T> clazz) {
         Set<String> jsonStringSet = redisTemplate.opsForZSet().rangeByScore(key, minScore, maxScore);
         return deserializeJsonSet(jsonStringSet, clazz);
+    }
+
+    public Long zSize(String key) {
+        return redisTemplate.opsForZSet().zCard(key);
+    }
+
+    public void zClear(String key) {
+        redisTemplate.delete(key);
     }
 
     private <T> Set<T> deserializeJsonSet(Set<String> jsonStringSet, Class<T> clazz) {

@@ -2,31 +2,28 @@ package com.sparkfire.squirmulu.entity;
 
 import java.util.List;
 
-public class IndexTarget {
-    private static final int OBJECT = 1;
-    private static final int ARRAY = 2;
+public class IndexTargetForAdd {
     private String target;
     private int level;
     private List<String> keys;
+
+    private String name;
     private String value;
 
-    private int type = 0;
-
-
-    public IndexTarget(String target, int level, List<String> keys, String value, int type) {
+    public IndexTargetForAdd(String target, int level, List<String> keys, String name, String value) {
         this.target = target;
         this.level = level;
         this.keys = keys;
+        this.name = name;
         this.value = value;
-        this.type = type;
     }
 
-    public int getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getTarget() {

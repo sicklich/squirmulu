@@ -48,6 +48,7 @@ security:
     whites:
       - /squ/user/user-account/register
       - /squ/user/user-account/login
+      - /squ/other/payment/notify
       - /doc**
       - /doc.html
       - /webjars*
