@@ -32,7 +32,7 @@ public class PayController {
 
     @PostMapping("/notify")
     public CommonResponse notify(@RequestBody WechatPayNotify notify) throws GeneralSecurityException, IOException {
-        wechatPayService.notifyProcess(notify.getResource());
+        wechatPayService.notifyProcess(notify);
         return CommonResponse.success("");
     }
 }

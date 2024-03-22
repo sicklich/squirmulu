@@ -1,7 +1,10 @@
 package com.sparkfire.squirmulu.service;
 
-
-import ch.qos.logback.core.net.ObjectWriter;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparkfire.squirmulu.dao.WxTradeDao;
+import com.sparkfire.squirmulu.entity.WxTrade;
+import com.sparkfire.squirmulu.entity.notify.WechatPayNotify;
 import com.sparkfire.squirmulu.entity.notify.WechatResource;
 import com.sparkfire.squirmulu.entity.request.PrePayRequest;
 import com.sparkfire.squirmulu.entity.response.PrePayResponse;
@@ -9,7 +12,6 @@ import com.sparkfire.squirmulu.util.AesUtil;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import com.wechat.pay.java.core.RSAAutoCertificateConfig;
 import com.wechat.pay.java.service.payments.nativepay.NativePayService;
-import com.wechat.pay.java.service.payments.nativepay.model.Amount;
 import com.wechat.pay.java.service.payments.nativepay.model.PrepayRequest;
 import com.wechat.pay.java.service.payments.nativepay.model.PrepayResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +45,12 @@ public class WechatPayService {
     private String notifyUrl;
 
     @Autowired
-    ObjectWriter objectWriter;
+    ObjectMapper objectMapper;
 
-    public PrePayResponse prePay(PrePayRequest prepayRequest){
+    @Autowired
+    WxTradeDao wxTradeDao;
+
+    public PrePayResponse prePay(PrePayRequest prepayRequest) {
         RSAAutoCertificateConfig config =
                 new RSAAutoCertificateConfig.Builder()
                         .merchantId(merchantId)
@@ -62,22 +67,37 @@ public class WechatPayService {
         request.setMchid(merchantId);
         request.setDescription(prepayRequest.getDescription());
         request.setNotifyUrl(notifyUrl);
-        request.setOutTradeNo(SnowflakeGenerator.nextId()+"");
+        long out_trade_no = SnowflakeGenerator.nextId();
+        request.setOutTradeNo(out_trade_no + "");
         request.setAmount(prepayRequest.getAmount());
         // 调用下单方法，得到应答
         PrepayResponse response = payService.prepay(request);
-        System.out.println("code_url:"+response.getCodeUrl());
+        long now = System.currentTimeMillis() / 1000;
+        wxTradeDao.insert(new WxTrade(out_trade_no, 0, prepayRequest.getId(), prepayRequest.getAmount().getTotal()
+                , prepayRequest.getDescription(), now, now));
+        System.out.println("code_url:" + response.getCodeUrl());
         // 使用微信扫描 code_url 对应的二维码，即可体验Native支付
         return new PrePayResponse(response.getCodeUrl());
     }
 
 
-    public void notifyProcess(WechatResource resource) throws GeneralSecurityException, IOException {
+    public void notifyProcess(WechatPayNotify notify) throws GeneralSecurityException, IOException {
+        // 0创建 1成功 -1失败
+        int status = notify.getEvent_type().equals("TRANSACTION.SUCCESS") ? 1 : -1;
+        WechatResource resource = notify.getResource();
         String res = AesUtil.decryptToString(apiV3Key.getBytes(), resource.getAssociated_data().getBytes()
                 , resource.getNonce().getBytes(), resource.getCiphertext());
         System.out.println(res);
+        //解出tradeno
+        JsonNode rootNode = objectMapper.readTree(res);
+        String outTradeNo = rootNode.get("out_trade_no").asText();
+        System.out.println("out_trade_no: " + outTradeNo);
 
-
+        long outTradeNoAsLong = Long.parseLong(outTradeNo);
+        WxTrade trade = new WxTrade();
+        trade.setTrade_no(outTradeNoAsLong);
+        trade.setStatus(status);
+        trade.setEdit_time(System.currentTimeMillis() / 1000);
 
     }
 }
