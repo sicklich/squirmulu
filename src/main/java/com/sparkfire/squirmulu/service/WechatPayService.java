@@ -75,6 +75,8 @@ public class WechatPayService {
     public void notifyProcess(WechatResource resource) throws GeneralSecurityException, IOException {
         String res = AesUtil.decryptToString(apiV3Key.getBytes(), resource.getAssociated_data().getBytes()
                 , resource.getNonce().getBytes(), resource.getCiphertext());
+        System.out.println(res);
+
 
 
     }
