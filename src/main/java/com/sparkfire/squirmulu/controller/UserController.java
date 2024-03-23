@@ -7,16 +7,14 @@ import com.sparkfire.squirmulu.dao.ImgDao;
 import com.sparkfire.squirmulu.dao.InvitationCodeDao;
 import com.sparkfire.squirmulu.dao.MessageDao;
 import com.sparkfire.squirmulu.entity.*;
-import com.sparkfire.squirmulu.entity.request.MyImgReq;
-import com.sparkfire.squirmulu.entity.request.MyMsgReq;
-import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
-import com.sparkfire.squirmulu.entity.request.MyRoomListReq;
+import com.sparkfire.squirmulu.entity.request.*;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.mapper.SysUserMapper;
 import com.sparkfire.squirmulu.pojo.SysUser;
 import com.sparkfire.squirmulu.service.CardService;
 import com.sparkfire.squirmulu.service.RoomService;
 import com.sparkfire.squirmulu.service.SysUserService;
+import com.sparkfire.squirmulu.service.UserInfoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +55,9 @@ public class UserController {
 
     @Autowired(required = false)
     private SysUserMapper sysUserMapper;
+
+    @Autowired
+    private UserInfoService userInfoService;
 
     /**
      * 用户登录
@@ -147,6 +148,16 @@ public class UserController {
         return CommonResponse.success(messageDao.getByPage(req.getUser_id(), req.getType(), req.getNum_cur(), req.getPage_size()).stream()
                 .map(msg -> new MessageDBWithIDString(msg.getId() + "", msg.getUser_id(), msg.getType(), msg.getBackend_type(), msg.getMessage_body(), msg.getC_time(), msg.getStatus()))
                 .collect(Collectors.toList()));
+    }
+
+    @RequestMapping("/user-achie/update-coin")
+    public CommonResponse update_coin(@RequestBody CoinUpdateReq req) {
+        return CommonResponse.success(userInfoService.updateCoin(req));
+    }
+
+    @RequestMapping("/user-achie/pull-coin")
+    public CommonResponse pull_coin(@RequestBody CoinPullReq req) {
+        return CommonResponse.success(userInfoService.pullCoin(req));
     }
 
 }

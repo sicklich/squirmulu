@@ -98,6 +98,7 @@ public class WechatPayService {
         trade.setTrade_no(outTradeNoAsLong);
         trade.setStatus(status);
         trade.setEdit_time(System.currentTimeMillis() / 1000);
+        wxTradeDao.updateStatus(trade);
 
     }
 }
