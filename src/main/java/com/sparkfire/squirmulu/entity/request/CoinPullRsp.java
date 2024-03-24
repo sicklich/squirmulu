@@ -5,8 +5,6 @@ import java.util.List;
 public class CoinPullRsp {
     private List<CoinPullRecord> user_list;
 
-    // Getter and Setter methods
-    // ...
     public CoinPullRsp() {
     }
 

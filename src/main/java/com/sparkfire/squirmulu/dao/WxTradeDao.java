@@ -2,6 +2,7 @@ package com.sparkfire.squirmulu.dao;
 
 import com.sparkfire.squirmulu.entity.WxTrade;
 import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.type.JdbcType;
 
 import java.util.List;
 
@@ -21,6 +22,15 @@ public interface WxTradeDao {
     int updateStatus(WxTrade wx_trade);
 
     @Select("SELECT * FROM wx_trade WHERE trade_no = #{trade_no}")
+    @Results({
+            @Result(property = "trade_no", column = "trade_no"),
+            @Result(property = "status", column = "status"),
+            @Result(property = "user_id", column = "user_id"),
+            @Result(property = "total", column = "total"),
+            @Result(property = "description", column = "description"),
+            @Result(property = "create_time", column = "create_time"),
+            @Result(property = "edit_time", column = "edit_time")
+    })
     WxTrade findByTradeNo(long trade_no);
 
     @Select("SELECT * FROM wx_trade")

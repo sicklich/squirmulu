@@ -7,6 +7,7 @@ import com.sparkfire.squirmulu.netty.message.heartbeat.HeartbeatRequest;
 import com.sparkfire.squirmulu.netty.message.heartbeat.HeartbeatResponse;
 import com.sparkfire.squirmulu.netty.service.Invocation;
 import com.sparkfire.squirmulu.netty.handler.MessageHandler;
+import com.sparkfire.squirmulu.netty.service.NettyChannelManager;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.slf4j.Logger;
@@ -20,11 +21,17 @@ public class HeartbeatRequestHandler implements MessageHandler<HeartbeatRequest>
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    NettyChannelManager nettyChannelManager;
+
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public void execute(Channel channel, HeartbeatRequest message) {
         logger.info("[execute][收到连接({}) 的心跳请求]", channel.id());
+        if(!message.getUser_id().equals("")){
+            nettyChannelManager.addUser(channel, message.getUser_id());
+        }
         // 响应心跳
         HeartbeatResponse response = new HeartbeatResponse().setCode(0);
         try {

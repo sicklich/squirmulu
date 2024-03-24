@@ -1,10 +1,13 @@
 package com.sparkfire.squirmulu.netty.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -16,6 +19,9 @@ import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class NettyChannelManager {
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     /**
      * {@link Channel#attr(AttributeKey)} 属性中，表示 Channel 对应的用户
@@ -85,7 +91,7 @@ public class NettyChannelManager {
         channel.attr(CHANNEL_ATTR_KEY_USER).set(user);
         // 添加到 userChannels
         userChannels.put(user, channel);
-        logger.info("add user {}", user);
+        logger.info("add user {}, id:{}", user, channel.id());
     }
 
     public void addUserTmp(Channel channel, String user) {
@@ -125,6 +131,7 @@ public class NettyChannelManager {
 
     public void send(String user, Invocation invocation) {
         // 获得用户对应的 Channel
+        System.out.println("user:"+user);
         Channel channel = userChannels.get(user);
         if (channel == null) {
             logger.error("[send][连接不存在]");
@@ -135,6 +142,11 @@ public class NettyChannelManager {
             return;
         }
         // 发送消息
+        try {
+            logger.info("send, channel id:{}, msg:{}", channel.id(), objectMapper.writeValueAsString(invocation));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         channel.writeAndFlush(invocation);
     }
 

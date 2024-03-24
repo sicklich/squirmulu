@@ -8,6 +8,9 @@ import com.sparkfire.squirmulu.entity.notify.WechatPayNotify;
 import com.sparkfire.squirmulu.entity.notify.WechatResource;
 import com.sparkfire.squirmulu.entity.request.PrePayRequest;
 import com.sparkfire.squirmulu.entity.response.PrePayResponse;
+import com.sparkfire.squirmulu.netty.message.WxPayNtf;
+import com.sparkfire.squirmulu.netty.service.Invocation;
+import com.sparkfire.squirmulu.netty.service.NettyChannelManager;
 import com.sparkfire.squirmulu.util.AesUtil;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import com.wechat.pay.java.core.RSAAutoCertificateConfig;
@@ -49,6 +52,9 @@ public class WechatPayService {
 
     @Autowired
     WxTradeDao wxTradeDao;
+
+    @Autowired
+    private NettyChannelManager nettyChannelManager;
 
     public PrePayResponse prePay(PrePayRequest prepayRequest) {
         RSAAutoCertificateConfig config =
@@ -99,6 +105,10 @@ public class WechatPayService {
         trade.setStatus(status);
         trade.setEdit_time(System.currentTimeMillis() / 1000);
         wxTradeDao.updateStatus(trade);
+        trade = wxTradeDao.findByTradeNo(outTradeNoAsLong);
+        //给客户端发消息
+        int code = status == 1 ? 0 : 1;
+        nettyChannelManager.send(trade.getUser_id() + "", new Invocation(WxPayNtf.TYPE, new WxPayNtf(code, "SUCCESS", trade.getUser_id() + "")));
 
     }
 }

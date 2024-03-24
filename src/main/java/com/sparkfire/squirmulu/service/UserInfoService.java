@@ -30,7 +30,7 @@ public class UserInfoService {
     public CoinUpdateRsp updateCoin(CoinUpdateReq req) {
         //todo 一致性问题解决
         long now = System.currentTimeMillis() / 1000;
-        String table = "user_coin" + TimeUtil.getMonthFormat(now);
+        String table = "user_coin_" + TimeUtil.getMonthFormat(now);
         for (CoinUpdateTarget target : req.getTargets()) {
             switch (target.getUpdate_rule()) {
                 case "plus": {
