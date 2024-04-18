@@ -9,11 +9,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sparkfire.squirmulu.entity.IndexElement;
 import com.sparkfire.squirmulu.entity.IndexTarget;
 import com.sparkfire.squirmulu.entity.IndexTargetForAdd;
+import com.sparkfire.squirmulu.entity.UpdateKeyRes;
 
 import java.util.List;
 
 public class JsonUtil {
-    public static String updateKeyForJsonBody(String json, List<IndexTarget> targets) {
+    public static UpdateKeyRes updateKeyForJsonBody(String json, List<IndexTarget> targets, long userId) {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = null;
         try {
@@ -21,6 +22,7 @@ public class JsonUtil {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+        int idx = 0;
         for (IndexTarget target : targets) {
             JsonNode jsonObject;
             try {
@@ -39,14 +41,28 @@ public class JsonUtil {
                 } else {
                     String ele = target.getKeys().get(i - 1);
                     if (tmpNode.isArray()) {
-                        tmpNode = tmpNode.get(Integer.parseInt(ele));
+                        if (ele.equals("g_players") && userId != 0) {
+                            //那么这里是要去找对应的userID而不是根据索引找
+                            //遍历一下tmpNode
+                            int index = 0;
+                            for (JsonNode arrayNode : tmpNode) {
+                                if (arrayNode.get("id").asLong() == userId) {
+                                    tmpNode = arrayNode;
+                                    idx = index;
+                                    break;
+                                }
+                                index++;
+                            }
+                        } else {
+                            tmpNode = tmpNode.get(Integer.parseInt(ele));
+                        }
                     } else {
                         tmpNode = tmpNode.get(ele);
                     }
                 }
             }
         }
-        return JSON.toJSONString(node);
+        return new UpdateKeyRes(JSON.toJSONString(node), idx);
     }
 
     public static String addKeyForJsonBody(String json, List<IndexTargetForAdd> targets) {
@@ -66,25 +82,25 @@ public class JsonUtil {
             }
             JsonNode tmpNode = node;
             for (int i = 1; i <= target.getLevel(); i++) {
-                System.out.println("level:"+target.getLevel()+" i:"+i);
+                System.out.println("level:" + target.getLevel() + " i:" + i);
                 if (i == target.getLevel()) {
                     if (jsonObject != null) {
                         if (tmpNode.isArray()) {
-                            System.out.println("size: "+ tmpNode.size()+ "target: "+target.getTarget());
-                            ((ObjectNode)tmpNode.get(Integer.parseInt(target.getTarget()))).set(target.getName(), jsonObject);
+                            System.out.println("size: " + tmpNode.size() + "target: " + target.getTarget());
+                            ((ObjectNode) tmpNode.get(Integer.parseInt(target.getTarget()))).set(target.getName(), jsonObject);
                         } else {
-                            ((ObjectNode)tmpNode.get(target.getTarget())).set(target.getName(), jsonObject);
+                            ((ObjectNode) tmpNode.get(target.getTarget())).set(target.getName(), jsonObject);
                         }
                     } else {
                         if (tmpNode.isArray()) {
                             ((ObjectNode) tmpNode.get(Integer.parseInt(target.getTarget()))).put(target.getName(), target.getValue());
                         } else {
-                            ((ObjectNode)tmpNode.get(target.getTarget())).put(target.getName(), target.getValue());
+                            ((ObjectNode) tmpNode.get(target.getTarget())).put(target.getName(), target.getValue());
                         }
                     }
                 } else {
                     String ele = target.getKeys().get(i - 1);
-                    System.out.println("ele: "+ele);
+                    System.out.println("ele: " + ele);
                     if (tmpNode.isArray()) {
                         tmpNode = tmpNode.get(Integer.parseInt(ele));
                     } else {

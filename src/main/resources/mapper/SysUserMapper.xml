@@ -39,6 +39,10 @@
     select  * from sys_user where  email=#{email}
   </select>
 
+  <select id="getSysUserInfoByEmailAndTelephone" resultMap="BaseResultMap">
+    select  * from sys_user where  email=#{email} and telephone=#{telephone}
+  </select>
+
   <select id="getSysUserInfo" resultType="com.sparkfire.squirmulu.pojo.SysUser">
     select  * from sys_user where  email=#{email} and pwd=#{pwd}
   </select>
@@ -48,7 +52,11 @@
   </select>
 
   <update id="update">
-    update sys_user set nickname=#{nickname},birthday=#{birthday},image=#{image},description=#{description} where  id=#{id}
+    update sys_user set nickname=#{nickname},birthday=#{birthday},image=#{image},description=#{description},update_time=#{updateTime} where  id=#{id}
+  </update>
+
+  <update id="updatePwd">
+    update sys_user set pwd=#{new_pwd},update_time=#{update_time} where  email=#{email} and telephone=#{telephone}
   </update>
 
 </mapper>

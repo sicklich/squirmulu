@@ -127,16 +127,16 @@ public class RoomService {
         }
     }
 
-    public CommonGameRes updateRoom(IndexBody body) throws JsonProcessingException {
+    public UpdateRoomRes updateRoom(IndexBody body) throws JsonProcessingException {
         String key = RedisClient.room_list;
         RoomInfo info = getRoomInfo(body.getId() + "");
-        String edited = JsonUtil.updateKeyForJsonBody(info.getBody_info(), body.getTargets());
-        info.setBody_info(edited);
+        UpdateKeyRes res = JsonUtil.updateKeyForJsonBody(info.getBody_info(), body.getTargets(), body.getUser_id());
+        info.setBody_info(res.getEdited());
         //todo  需要测试 引用部分需要认真对待
         processBaseInfo(info);
         roomDao.update(info);
         redisClient.addObject(key, String.valueOf(info.getId()), info);
-        return new CommonGameRes(String.valueOf(info.getId()));
+        return new UpdateRoomRes(String.valueOf(info.getId()), res.getIdx());
     }
 
     public CommonGameRes addRoomAttr(IndexBodyForAdd body) {
@@ -393,7 +393,7 @@ public class RoomService {
             Set<ChatSendToAll> batch = redisClient.zRange(key, start, end, ChatSendToAll.class);
             // 处理批次中的元素
             for (ChatSendToAll item : batch) {
-                if(item.getP_channel() == p_channel){
+                if (item.getP_channel() == p_channel) {
                     redisClient.zRemove(key, item, ChatSendToAll.class);
                 }
             }
@@ -427,8 +427,8 @@ public class RoomService {
         RoomInfo room = getRoomInfo(roomInfo.getId());
         room.setStatus(RoomStatus.RECRUITING.getStatusValue());
         logger.info("publish body{}, room id{}, status{}", room.getBody_info(), room.getId(), room.getStatus());
-        String edited = JsonUtil.updateKeyForJsonBody(room.getBody_info(), List.of(new IndexTarget("r_state", 2, List.of("r_info"), String.valueOf(RoomStatus.RECRUITING.getStatusValue()), 0)));
-        room.setBody_info(edited);
+        UpdateKeyRes res = JsonUtil.updateKeyForJsonBody(room.getBody_info(), List.of(new IndexTarget("r_state", 2, List.of("r_info"), String.valueOf(RoomStatus.RECRUITING.getStatusValue()), 0)), 0);
+        room.setBody_info(res.getEdited());
         processBaseInfo(room);
         redisClient.addObject(key, String.valueOf(room.getId()), room);
         logger.info("publish body{}, room id{}, status{}", room.getBody_info(), room.getId(), room.getStatus());

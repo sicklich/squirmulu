@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sparkfire.squirmulu.dao.CardDao;
 import com.sparkfire.squirmulu.dao.NpcCardDao;
-import com.sparkfire.squirmulu.entity.IndexBody;
-import com.sparkfire.squirmulu.entity.NpcCard;
-import com.sparkfire.squirmulu.entity.PlayerCard;
-import com.sparkfire.squirmulu.entity.PlayerCardIDString;
+import com.sparkfire.squirmulu.entity.*;
 import com.sparkfire.squirmulu.entity.request.MyPlayerCardListReq;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.entity.response.CommonGameRes;
@@ -74,8 +71,8 @@ public class CardService {
 
     public CommonGameRes updateNpcCard(IndexBody body) {
         NpcCard card = npcCardDao.get(body.getId());
-        String edited = JsonUtil.updateKeyForJsonBody(card.getBody_info(), body.getTargets());
-        card.setBody_info(edited);
+        UpdateKeyRes res = JsonUtil.updateKeyForJsonBody(card.getBody_info(), body.getTargets(), 0);
+        card.setBody_info(res.getEdited());
         npcCardDao.update(card);
         return new CommonGameRes(String.valueOf(body.getId()));
     }
@@ -88,8 +85,8 @@ public class CardService {
         if(card.getCard_user() != userId){
             throw new ServiceException("无法修改他人的人物卡！");
         }
-        String edited = JsonUtil.updateKeyForJsonBody(card.getRole_card(), body.getTargets());
-        card.setRole_card(edited);
+        UpdateKeyRes res = JsonUtil.updateKeyForJsonBody(card.getRole_card(), body.getTargets(), 0);
+        card.setRole_card(res.getEdited());
         card.setM_time(System.currentTimeMillis()/1000);
         cardDao.update(card);
         return new CommonGameRes(String.valueOf(body.getId()));

@@ -22,7 +22,9 @@ public class RoomEnterApproveReq implements Message {
     private String ntfMsgId;
     private String enter_mode;
 
-    public RoomEnterApproveReq(boolean approved, String user_id, String room_id, String roomname, String nickname, String card_id, String ntfMsgId, String enter_mode) {
+    private String reason;
+
+    public RoomEnterApproveReq(boolean approved, String user_id, String room_id, String roomname, String nickname, String card_id, String ntfMsgId, String enter_mode, String reason) {
         this.approved = approved;
         this.user_id = user_id;
         this.room_id = room_id;
@@ -31,6 +33,15 @@ public class RoomEnterApproveReq implements Message {
         this.card_id = card_id;
         this.ntfMsgId = ntfMsgId;
         this.enter_mode = enter_mode;
+        this.reason = reason;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     public RoomEnterApproveReq() {

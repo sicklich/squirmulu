@@ -5,12 +5,14 @@ import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 
 import com.sparkfire.squirmulu.dto.LoginUser;
+import com.sparkfire.squirmulu.entity.request.UpdatePwdReq;
 import com.sparkfire.squirmulu.entity.response.LoginRes;
 import com.sparkfire.squirmulu.exception.ServiceException;
 import com.sparkfire.squirmulu.mapper.SysUserMapper;
 import com.sparkfire.squirmulu.pojo.SysUser;
 import com.sparkfire.squirmulu.service.SysUserService;
 import com.sparkfire.squirmulu.service.TokenService;
+import com.sparkfire.squirmulu.utils.PhoneNoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +46,10 @@ public class SysUserServiceImpl implements SysUserService {
         if (StrUtil.isBlank(sysUser.getPwd())) {
             throw new ServiceException("密码不能为空", -3);
         }
-        if (!PhoneUtil.isMobile(sysUser.getTelephone())) {
+        if (!PhoneUtil.isMobile(sysUser.getTelephone()) && !PhoneUtil.isMobileHk(sysUser.getTelephone())
+                && !PhoneUtil.isMobileTw(sysUser.getTelephone()) && !PhoneNoUtil.isValidPhoneNumber("US", sysUser.getTelephone())
+                && !PhoneNoUtil.isValidPhoneNumber("GB", sysUser.getTelephone()) && !PhoneNoUtil.isValidPhoneNumber("JP", sysUser.getTelephone())
+                && !PhoneNoUtil.isValidPhoneNumber("CA", sysUser.getTelephone())) {
             throw new ServiceException("手机号输入错误", -3);
         }
         if (StrUtil.isBlank(sysUser.getNickname())) {
@@ -100,7 +105,7 @@ public class SysUserServiceImpl implements SysUserService {
 
         sysUserMapper.updateLastSignInTime(user.getId());
 
-        return new LoginRes(user, token.get("access_token").toString());
+        return new LoginRes(user, token.get("access_token").toString(), 0);
     }
 
     @Override
@@ -110,7 +115,20 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public SysUser update(SysUser sysUser) {
+        sysUser.setUpdateTime(new Date());
         sysUserMapper.update(sysUser);
         return sysUserMapper.getSysUserInfoById(sysUser.getId());
+    }
+
+    @Override
+    public LoginRes updatePwd(UpdatePwdReq req) {
+        SysUser user = sysUserMapper.getSysUserInfoByEmailAndTelephone(req);
+        if (null == user) {
+            return new LoginRes(new SysUser(), "", 1);
+        }
+        req.setUpdate_time(new Date());
+        sysUserMapper.updatePwd(req);
+        return loginV2(req.getEmail(), req.getNew_pwd());
+//        return new LoginRes(sysUserMapper.getSysUserInfoByEmail(req.getEmail()),"",0);
     }
 }

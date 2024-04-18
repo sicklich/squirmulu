@@ -1,6 +1,7 @@
 package com.sparkfire.squirmulu.service;
 
 
+import com.sparkfire.squirmulu.entity.request.UpdatePwdReq;
 import com.sparkfire.squirmulu.entity.response.LoginRes;
 import com.sparkfire.squirmulu.pojo.SysUser;
 
@@ -19,6 +20,8 @@ public interface SysUserService
     SysUser getUserInfoById(Long id);
 
     SysUser update(SysUser sysUser);
+
+    LoginRes updatePwd(UpdatePwdReq req);
 //
 // public int deleteById(Long id);
 }

@@ -52,7 +52,7 @@ public class UserEnterRoomApproveHandler implements MessageHandler<RoomEnterAppr
                 channel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(RoomEnterApproveRsp.TYPE, rsp))));
                 //这个发给申请人
                 Channel userChannel = channelManager.getUser(message.getUser_id());
-                UserEnterRoomApproveNtf ntf = new UserEnterRoomApproveNtf(0,Long.parseLong(message.getRoom_id()),Long.parseLong(message.getUser_id()),message.getRoomname(),message.getNickname(),message.getCard_id());
+                UserEnterRoomApproveNtf ntf = new UserEnterRoomApproveNtf(0,Long.parseLong(message.getRoom_id()),Long.parseLong(message.getUser_id()),message.getRoomname(),message.getNickname(),message.getCard_id(), message.getReason());
                 String ntfBody = objectMapper.writeValueAsString(new Invocation(UserEnterRoomApproveNtf.TYPE, ntf));
                 //消息保存
                 long id = SnowflakeGenerator.nextId();
@@ -72,7 +72,7 @@ public class UserEnterRoomApproveHandler implements MessageHandler<RoomEnterAppr
                 channel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new Invocation(RoomEnterApproveRsp.TYPE, rsp))));
                 //这个发给申请人
                 Channel userChannel = channelManager.getUser(message.getUser_id());
-                UserEnterRoomApproveNtf ntf = new UserEnterRoomApproveNtf(-1,Long.parseLong(message.getRoom_id()),Long.parseLong(message.getUser_id()),message.getRoomname(),message.getNickname(),message.getCard_id());
+                UserEnterRoomApproveNtf ntf = new UserEnterRoomApproveNtf(-1,Long.parseLong(message.getRoom_id()),Long.parseLong(message.getUser_id()),message.getRoomname(),message.getNickname(),message.getCard_id(), message.getReason());
                 String ntfBody = objectMapper.writeValueAsString(new Invocation(UserEnterRoomApproveNtf.TYPE, ntf));
                 //消息保存
                 long id = SnowflakeGenerator.nextId();

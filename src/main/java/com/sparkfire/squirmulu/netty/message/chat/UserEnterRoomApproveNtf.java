@@ -26,13 +26,24 @@ public class UserEnterRoomApproveNtf implements Message {
     private String nickname;
     private String card_id;
 
-    public UserEnterRoomApproveNtf(Integer code, long room_id, long user_id, String roomname, String nickname, String card_id) {
+    private String reason;
+
+    public UserEnterRoomApproveNtf(Integer code, long room_id, long user_id, String roomname, String nickname, String card_id, String reason) {
         this.code = code;
         this.room_id = room_id;
         this.user_id = user_id;
         this.roomname = roomname;
         this.nickname = nickname;
         this.card_id = card_id;
+        this.reason = reason;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     public UserEnterRoomApproveNtf() {

@@ -86,23 +86,23 @@ public class UserController {
     @ApiOperation("注册")
     public Result<Boolean> create(@RequestBody RegisterReq req) {
         // 验证邀请码是否有效
-        InvitationCode code = invitationCodeDao.findByCode(req.getInvitation_code());
-        if (code == null || code.getIs_used() == 1) {
-            return Result.fail(-1, "Invalid invitation code");
-        }
+//        InvitationCode code = invitationCodeDao.findByCode(req.getInvitation_code());
+//        if (code == null || code.getIs_used() == 1) {
+//            return Result.fail(-1, "Invalid invitation code");
+//        }
 
         // 在这里执行正常的注册逻辑，如保存用户信息到数据库等
         SysUser user = new SysUser(req.getEmail(),req.getPwd(),req.getTelephone(),req.getNickname());
         sysUserService.insert(user);
-        SysUser userINDB = sysUserMapper.getSysUserInfo(req.getEmail(), req.getPwd());
+//        SysUser userINDB = sysUserMapper.getSysUserInfo(req.getEmail(), req.getPwd());
 
         // 将邀请码标记为已使用，并设置关联的用户 ID
-        long now = System.currentTimeMillis()/1000;
-        code.setIs_used(1);
-        code.setUser_id(userINDB.getId());
-        code.setUse_time(now);
-        code.setCode(req.getInvitation_code());
-        invitationCodeDao.update(code);
+//        long now = System.currentTimeMillis()/1000;
+//        code.setIs_used(1);
+//        code.setUser_id(userINDB.getId());
+//        code.setUse_time(now);
+//        code.setCode(req.getInvitation_code());
+//        invitationCodeDao.update(code);
 
         return Result.ok(true);
     }
@@ -110,6 +110,11 @@ public class UserController {
     @RequestMapping("/user-account/update-info")
     public CommonResponse update(@RequestBody SysUser user) {
         return CommonResponse.success(sysUserService.update(user));
+    }
+
+    @RequestMapping("/user-account/findback-account")
+    public CommonResponse updatePwd(@RequestBody UpdatePwdReq req) {
+        return CommonResponse.success(sysUserService.updatePwd(req));
     }
 
 

@@ -3,7 +3,10 @@ package com.sparkfire.squirmulu.netty.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelId;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,15 +67,16 @@ public class NettyChannelManager {
         userRooms.put(userID, roomID);
         channel.attr(CHANNEL_ATTR_KEY_ROOM).set(roomID);
         channel.attr(CHANNEL_ATTR_KEY_USER_ID).set(userID);
-        Set<Channel> channels = roomChannels.getOrDefault(roomID, new HashSet<>() {});
+        Set<Channel> channels = roomChannels.getOrDefault(roomID, new HashSet<>() {
+        });
         channels.add(channel);
-        roomChannels.put(roomID,channels);
-        addUser(channel, userID+"");
+        roomChannels.put(roomID, channels);
+        addUser(channel, userID + "");
         logger.info("[add][一个连接({})加入房间,用户{},房间{}]", channel.id(), userID, roomID);
     }
 
-    public Set<Channel> getRoomChannel(long roomID){
-        return roomChannels.getOrDefault(roomID,new HashSet<>());
+    public Set<Channel> getRoomChannel(long roomID) {
+        return roomChannels.getOrDefault(roomID, new HashSet<>());
     }
 
     /**
@@ -131,7 +135,7 @@ public class NettyChannelManager {
 
     public void send(String user, Invocation invocation) {
         // 获得用户对应的 Channel
-        System.out.println("user:"+user);
+        System.out.println("user:" + user);
         Channel channel = userChannels.get(user);
         if (channel == null) {
             logger.error("[send][连接不存在]");
@@ -144,10 +148,21 @@ public class NettyChannelManager {
         // 发送消息
         try {
             logger.info("send, channel id:{}, msg:{}", channel.id(), objectMapper.writeValueAsString(invocation));
+
+            ChannelFuture future = channel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(invocation)));
+
+            future.addListener((ChannelFutureListener) future1 -> {
+                if (future1.isSuccess()) {
+                    System.out.println("Message sent successfully");
+                } else {
+                    Throwable cause = future1.cause();
+                    System.err.println("Failed to send message: " + cause.getMessage());
+                    cause.printStackTrace();
+                }
+            });
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        channel.writeAndFlush(invocation);
     }
 
     /**

@@ -62,7 +62,9 @@ public class UserEnterRoomHandler implements MessageHandler<UserEnterRoomRequest
                 channelManager.enterRoom(channel, message.getRoom_id(), message.getUser_id());
                 logger.info("kp {} enter", message.getUser_id());
                 sendResponse = sendResponse.setCode(0);
-            }else if (room.isApprove_required()) {
+            } else if(roomService.roomEnough(message.getRoom_id()+"")){
+                sendResponse = sendResponse.setCode(3);
+            } else if (room.isApprove_required()) {
                 //给房主发消息
                 long kpId = room.getKp_id();
                 Channel kpChannel = channelManager.getUser(kpId + "");
@@ -89,9 +91,7 @@ public class UserEnterRoomHandler implements MessageHandler<UserEnterRoomRequest
                 sendResponse = sendResponse.setCode(2);
                 //加入玩家缓存
                 channelManager.addUser(channel, message.getUser_id()+"");
-            } else if(roomService.roomEnough(message.getRoom_id()+"")){
-                sendResponse = sendResponse.setCode(3);
-            } else {
+            }  else {
                 sendResponse = sendResponse.setCode(0);
                 channelManager.enterRoom(channel, message.getRoom_id(), message.getUser_id());
                 //另外需要在房间中加入人物卡
