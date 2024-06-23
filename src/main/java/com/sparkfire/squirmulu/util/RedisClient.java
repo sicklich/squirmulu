@@ -3,9 +3,7 @@ package com.sparkfire.squirmulu.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -194,6 +192,31 @@ public class RedisClient {
     public <T> Set<T> zRevRange(String key, long start, long end, Class<T> clazz) {
         ZSetOperations<String, String> zSetOp = redisTemplate.opsForZSet();
         Set<String> jsonStringSet = redisTemplate.opsForZSet().reverseRange(key, start, end);
+        return deserializeJsonSet(jsonStringSet, clazz);
+    }
+
+    public <T> Set<T> zRevRangeWithZScan(String key, long start, long end, Class<T> clazz) {
+        ZSetOperations<String, String> zSetOp = redisTemplate.opsForZSet();
+        Set<String> jsonStringSet = new HashSet<>();
+
+        long count = end - start + 1;
+        long cursor = 0;
+        long index = 0;
+        ScanOptions scanOptions = ScanOptions.scanOptions().count(count).build();
+        Cursor<ZSetOperations.TypedTuple<String>> cursorResult = zSetOp.scan(key, scanOptions);
+
+        while (cursorResult.hasNext()) {
+            ZSetOperations.TypedTuple<String> tuple = cursorResult.next();
+            if (index >= start) {
+                jsonStringSet.add(tuple.getValue());
+                if (jsonStringSet.size() >= count) {
+                    break;
+                }
+            }
+            index++;
+        }
+
+        cursorResult.close();
         return deserializeJsonSet(jsonStringSet, clazz);
     }
 

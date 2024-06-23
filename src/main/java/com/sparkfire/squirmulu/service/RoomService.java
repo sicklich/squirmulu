@@ -338,6 +338,11 @@ public class RoomService {
 
     public List<ChatSendToAll> getChatList(ChatListReq req) {
         String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + req.getRoom_id();
+
+        if(req.getPage_size() == -1){
+            return redisClient.zRevRange(key, 0, -1, ChatSendToAll.class).stream()
+                    .sorted(Comparator.comparing(ChatSendToAll::getP_time).reversed()).collect(Collectors.toList());
+        }
         long start = req.getNum_cur();
         long end = start + req.getPage_size() - 1;
         List<ChatSendToAll> chats = redisClient.zRevRange(key, start, end, ChatSendToAll.class).stream()
