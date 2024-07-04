@@ -69,6 +69,11 @@ public class RoomController {
                         , chat.getA_name(), chat.getA_img(), chat.getRoom_id() + "", chat.getUser_id(), chat.getC_type(), chat.getChat_type())).collect(Collectors.toList()));
     }
 
+    @RequestMapping("/game-into/search-record")
+    public CommonResponse search_record(@RequestBody ChatListReq req){
+
+    }
+
     @RequestMapping("/game-into/clear-msg")
     public CommonResponse clearMsg(@RequestBody ClearMsgReq req) throws JsonProcessingException {
         return CommonResponse.success(roomService.clearMsg(req));

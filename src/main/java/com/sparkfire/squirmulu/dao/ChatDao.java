@@ -66,4 +66,8 @@ public interface ChatDao {
             @Result(column = "a_name", property = "a_name"),
     })
     List<ChatSendToAll> findAll(@Param("tableName") String tableName);
+
+    @Select("SELECT id from ${tableName} WHERE p_channel = #{p_channel} and chat_type = chat" +
+            "and c_content like '%${keyWord}%' or r_des like '%${keyWord}%'")
+    List<Long> searchByKeyWords(@Param("tableName") String tableName, @Param("keyWord") String keyWord, @Param("p_channel") int p_channel, @Param("chat_type") int chat_type);
 }
