@@ -52,6 +52,23 @@ public interface ChatDao {
     })
     List<ChatSendToAll> findByPage(@Param("tableName") String tableName, @Param("room_id") long room_id, @Param("chat_type")int chat_type, @Param("offset") int offset, @Param("size") int size);
 
+
+
+    @Select("SELECT * FROM ${tableName} WHERE room_id = #{room_id} and chat_type = #{chat_type} order by p_time desc limit #{offset},#{size}")
+    @Results({
+            @Result(column = "id", property = "id"),
+            @Result(column = "user_id", property = "user_id"),
+            @Result(column = "room_id", property = "room_id"),
+            @Result(column = "c_content", property = "c_content"),
+            @Result(column = "p_time", property = "p_time"),
+            @Result(column = "chat_type", property = "chat_type"),
+            @Result(column = "c_type", property = "c_type"),
+            @Result(column = "p_channel", property = "p_channel"),
+            @Result(column = "a_img", property = "a_img"),
+            @Result(column = "a_name", property = "a_name"),
+    })
+    List<ChatSendToAll> findByPageWithPTime(@Param("tableName") String tableName, @Param("room_id") long room_id, @Param("chat_type")int chat_type, @Param("p_channel") int p_channel, @Param("p_time") int p_time, @Param("offset") int offset, @Param("size") int size);
+
     @Select("SELECT * FROM ${tableName}")
     @Results({
             @Result(column = "id", property = "id"),
@@ -67,7 +84,19 @@ public interface ChatDao {
     })
     List<ChatSendToAll> findAll(@Param("tableName") String tableName);
 
-    @Select("SELECT id from ${tableName} WHERE p_channel = #{p_channel} and chat_type = chat" +
+    @Select("SELECT * from ${tableName} WHERE p_channel = #{p_channel} and chat_type = chat" +
             "and c_content like '%${keyWord}%' or r_des like '%${keyWord}%'")
-    List<Long> searchByKeyWords(@Param("tableName") String tableName, @Param("keyWord") String keyWord, @Param("p_channel") int p_channel, @Param("chat_type") int chat_type);
+    @Results({
+            @Result(column = "id", property = "id"),
+            @Result(column = "user_id", property = "user_id"),
+            @Result(column = "room_id", property = "room_id"),
+            @Result(column = "c_content", property = "c_content"),
+            @Result(column = "p_time", property = "p_time"),
+            @Result(column = "chat_type", property = "chat_type"),
+            @Result(column = "c_type", property = "c_type"),
+            @Result(column = "p_channel", property = "p_channel"),
+            @Result(column = "a_img", property = "a_img"),
+            @Result(column = "a_name", property = "a_name"),
+    })
+    List<ChatSendToAll> searchByKeyWords(@Param("tableName") String tableName, @Param("keyWord") String keyWord, @Param("p_channel") int p_channel, @Param("chat_type") int chat_type);
 }

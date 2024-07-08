@@ -336,6 +336,21 @@ public class RoomService {
         return new RoomInfoResIDString(body.getId() + "", getAuthRole(info.getBody_info(), body.getUser_id()), elements);
     }
 
+    public List<ChatSendToAll> searchRecords(RecordSearchReq req) {
+        RoomInfo info = getRoomInfo(req.getRoom_id() + "");
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(info.getCreate_time()), ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+        String formatted = dateTime.format(formatter);
+        switch (req.getSearching_mode()){
+            case 0:
+                return chatDao.searchByKeyWords("chat_"+formatted,req.getKeywords(),req.getP_channel(),req.getChat_type());
+            case 1:
+
+            default:
+                throw new ServiceException("不支持的查询模式");
+        }
+    }
+
     public List<ChatSendToAll> getChatList(ChatListReq req) {
         String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + req.getRoom_id();
 

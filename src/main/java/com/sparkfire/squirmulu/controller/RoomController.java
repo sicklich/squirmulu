@@ -70,7 +70,7 @@ public class RoomController {
     }
 
     @RequestMapping("/game-into/search-record")
-    public CommonResponse search_record(@RequestBody ChatListReq req){
+    public CommonResponse search_record(@RequestBody RecordSearchReq req){
 
     }
 
