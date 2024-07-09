@@ -71,7 +71,9 @@ public class RoomController {
 
     @RequestMapping("/game-into/search-record")
     public CommonResponse search_record(@RequestBody RecordSearchReq req){
-
+        return CommonResponse.success(roomService.searchRecords(req).stream()
+                .map(chat -> new ChatSendToAllWithIDString(chat.getId() + "", chat.getP_channel(), chat.getP_time(), chat.getC_content()
+                        , chat.getA_name(), chat.getA_img(), chat.getRoom_id() + "", chat.getUser_id(), chat.getC_type(), chat.getChat_type())).collect(Collectors.toList()));
     }
 
     @RequestMapping("/game-into/clear-msg")

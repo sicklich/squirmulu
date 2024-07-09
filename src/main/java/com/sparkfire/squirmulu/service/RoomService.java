@@ -343,9 +343,15 @@ public class RoomService {
         String formatted = dateTime.format(formatter);
         switch (req.getSearching_mode()){
             case 0:
-                return chatDao.searchByKeyWords("chat_"+formatted,req.getKeywords(),req.getP_channel(),req.getChat_type());
+                return chatDao.searchByKeyWords("chat_"+formatted,req.getKeywords(),req.getP_channel(),req.getChat_type(), req.getRoom_id());
             case 1:
-
+                return chatDao.findByPageWithPTimeDesc("chat_"+formatted, req.getRoom_id(), req.getChat_type()
+                        , req.getP_channel(), chatDao.findById("chat_"+formatted, Long.parseLong(req.getKeywords())).getP_time()
+                        , (req.getPage_cur()-1) * req.getPage_size(), req.getPage_size());
+            case 2:
+                return chatDao.findByPageWithPTime("chat_"+formatted, req.getRoom_id(), req.getChat_type()
+                        , req.getP_channel(), chatDao.findById("chat_"+formatted, Long.parseLong(req.getKeywords())).getP_time()
+                        , (req.getPage_cur()-1) * req.getPage_size(), req.getPage_size());
             default:
                 throw new ServiceException("不支持的查询模式");
         }
