@@ -1,6 +1,6 @@
 package com.sparkfire.squirmulu.entity;
 
-public class Img {
+public class CommonFile {
     private String file;
     private long userID;
     private long c_time;
@@ -13,7 +13,7 @@ public class Img {
 //    }
 
 
-    public Img(String file, long userID, long c_time, long m_time, int type) {
+    public CommonFile(String file, long userID, long c_time, long m_time, int type) {
         this.file = file;
         this.userID = userID;
         this.c_time = c_time;

@@ -1,5 +1,6 @@
 package com.sparkfire.squirmulu.service;
 
+import com.sparkfire.squirmulu.dao.AudioDao;
 import com.sparkfire.squirmulu.dao.ImgDao;
 import com.sparkfire.squirmulu.entity.CommonFile;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
@@ -13,11 +14,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Service
-public class ImgService {
+public class AudioService {
     @Autowired
-    ImgDao imgDao;
+    AudioDao audioDao;
 
-    public String uploadImg(MultipartFile file, String path, long userID, int type, String httpPath) throws IOException {
+    public String uploadAudio(MultipartFile file, String path, long userID, int type, String httpPath) throws IOException {
         if (null == file || file.isEmpty()) {
             return "";
         }
@@ -36,7 +37,7 @@ public class ImgService {
 
         //保存到dao
         long now = System.currentTimeMillis() / 1000;
-        imgDao.insert(new CommonFile(randomFilename, userID, now, now, type));
+        audioDao.insert(new CommonFile(randomFilename, userID, now, now, type));
         return httpPath + randomFilename;
     }
 }

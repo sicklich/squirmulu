@@ -23,8 +23,8 @@ public class UserInfoService {
     @Autowired
     SysUserMapper userMapper;
 
-    @Value("${http.path}")
-    private String httpPath;
+    @Value("${http.img.path}")
+    private String httpImgPath;
 
 
     public CoinUpdateRsp updateCoin(CoinUpdateReq req) {
@@ -69,7 +69,7 @@ public class UserInfoService {
                 List<UserCoin> coins = userInfoDao.findMonthRank("user_coin_" + TimeUtil.getMonthFormat(System.currentTimeMillis() / 1000), req.getCoin_type());
                 recordList = coins.stream().map(coin -> {
                     SysUser user = userMapper.getSysUserInfoById(coin.getId());
-                    return new CoinPullRecord(coin.getId(), httpPath + user.getImage(), coin.getCoin_type(), coin.getAmount());
+                    return new CoinPullRecord(coin.getId(), httpImgPath + user.getImage(), coin.getCoin_type(), coin.getAmount());
                 }).collect(Collectors.toList());
                 break;
             }

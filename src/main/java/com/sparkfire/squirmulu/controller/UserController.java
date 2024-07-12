@@ -3,6 +3,7 @@ package com.sparkfire.squirmulu.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparkfire.squirmulu.common.Result;
+import com.sparkfire.squirmulu.dao.AudioDao;
 import com.sparkfire.squirmulu.dao.ImgDao;
 import com.sparkfire.squirmulu.dao.InvitationCodeDao;
 import com.sparkfire.squirmulu.dao.MessageDao;
@@ -22,9 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Api(tags = "用户信息")
@@ -47,8 +46,14 @@ public class UserController {
     @Autowired
     private ImgDao imgDao;
 
-    @Value("${http.path}")
-    private String httpPath;
+    @Autowired
+    private AudioDao audioDao;
+
+    @Value("${http.img.path}")
+    private String httpImgPath;
+
+    @Value("${http.audio.path}")
+    private String httpAudioPath;
 
     @Autowired
     private MessageDao messageDao;
@@ -142,9 +147,16 @@ public class UserController {
     }
 
     @PostMapping("/owned/pull-img-list")
-    public CommonResponse<List<String>> myImage(@RequestBody() MyImgReq req) {
+    public CommonResponse<List<String>> myImage(@RequestBody() MyFileReq req) {
         return CommonResponse.success(imgDao.getByIDAndType(req.getId(), req.getType()).stream()
-                .skip(req.getNum_cur()).limit(req.getPage_size()).map(file -> httpPath + file)
+                .skip(req.getNum_cur()).limit(req.getPage_size()).map(file -> httpImgPath + file)
+                .collect(Collectors.toList()));
+    }
+
+    @PostMapping("/owned/pull-audio-list")
+    public CommonResponse<List<String>> myAudio(@RequestBody() MyFileReq req) {
+        return CommonResponse.success(audioDao.getByIDAndType(req.getId(), req.getType()).stream()
+                .skip(req.getNum_cur()).limit(req.getPage_size()).map(file -> httpAudioPath + file)
                 .collect(Collectors.toList()));
     }
 

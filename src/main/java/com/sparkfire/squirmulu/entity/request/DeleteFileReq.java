@@ -1,12 +1,12 @@
 package com.sparkfire.squirmulu.entity.request;
 
-public class DeleteImgReq {
+public class DeleteFileReq {
     private String filename;
 
-    public DeleteImgReq() {
+    public DeleteFileReq() {
     }
 
-    public DeleteImgReq(String filename) {
+    public DeleteFileReq(String filename) {
         this.filename = filename;
     }
 

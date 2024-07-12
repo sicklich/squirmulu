@@ -1,12 +1,12 @@
 package com.sparkfire.squirmulu.entity.request;
 
-public class MyImgReq {
+public class MyFileReq {
     private long id;
     private int type;
     private int num_cur;
     private int page_size;
 
-    public MyImgReq() {
+    public MyFileReq() {
     }
 
 
