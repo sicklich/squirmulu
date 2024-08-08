@@ -2,7 +2,9 @@ package com.sparkfire.squirmulu.service;
 
 import com.sparkfire.squirmulu.dao.AudioDao;
 import com.sparkfire.squirmulu.dao.ImgDao;
+import com.sparkfire.squirmulu.entity.AudioFile;
 import com.sparkfire.squirmulu.entity.CommonFile;
+import com.sparkfire.squirmulu.entity.response.AudioFileSimple;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,9 +20,9 @@ public class AudioService {
     @Autowired
     AudioDao audioDao;
 
-    public String uploadAudio(MultipartFile file, String path, long userID, int type, String httpPath) throws IOException {
+    public AudioFileSimple uploadAudio(MultipartFile file, String name, String path, long userID, int type, String httpPath) throws IOException {
         if (null == file || file.isEmpty()) {
-            return "";
+            return new AudioFileSimple();
         }
         // 创建目录
         Files.createDirectories(Paths.get(path));
@@ -37,7 +39,7 @@ public class AudioService {
 
         //保存到dao
         long now = System.currentTimeMillis() / 1000;
-        audioDao.insert(new CommonFile(randomFilename, userID, now, now, type));
-        return httpPath + randomFilename;
+        audioDao.insert(new AudioFile(randomFilename, name, userID, now, now, type));
+        return new AudioFileSimple(httpPath + randomFilename, name);
     }
 }

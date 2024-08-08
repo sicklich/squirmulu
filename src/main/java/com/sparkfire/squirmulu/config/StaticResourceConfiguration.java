@@ -10,11 +10,16 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
     @Value("${img.path}")
     private String path;
 
+    @Value("${audio.path}")
+    private String audioPath;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 静态资源映射
         String absolutePath = "file:"+path;
         System.out.println(absolutePath);
         registry.addResourceHandler("/img/**").addResourceLocations(absolutePath);
+        String absoluteAudioPath = "file:"+audioPath;
+        registry.addResourceHandler("/audio/**").addResourceLocations(absoluteAudioPath);
     }
 }

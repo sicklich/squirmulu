@@ -9,7 +9,9 @@ import com.sparkfire.squirmulu.dao.InvitationCodeDao;
 import com.sparkfire.squirmulu.dao.MessageDao;
 import com.sparkfire.squirmulu.entity.*;
 import com.sparkfire.squirmulu.entity.request.*;
+import com.sparkfire.squirmulu.entity.response.AudioFileSimple;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
+import com.sparkfire.squirmulu.entity.response.MyAudioFileRes;
 import com.sparkfire.squirmulu.mapper.SysUserMapper;
 import com.sparkfire.squirmulu.pojo.SysUser;
 import com.sparkfire.squirmulu.service.CardService;
@@ -154,10 +156,10 @@ public class UserController {
     }
 
     @PostMapping("/owned/pull-audio-list")
-    public CommonResponse<List<String>> myAudio(@RequestBody() MyFileReq req) {
-        return CommonResponse.success(audioDao.getByIDAndType(req.getId(), req.getType()).stream()
-                .skip(req.getNum_cur()).limit(req.getPage_size()).map(file -> httpAudioPath + file)
-                .collect(Collectors.toList()));
+    public CommonResponse<MyAudioFileRes> myAudio(@RequestBody() MyFileReq req) {
+        return CommonResponse.success(new MyAudioFileRes(audioDao.getByIDAndType(req.getId(), req.getType()).stream()
+                .skip(req.getNum_cur()).limit(req.getPage_size()).map(file -> new AudioFileSimple(httpAudioPath + file.getFile(), file.getName()))
+                .collect(Collectors.toList())));
     }
 
     @PostMapping("/user-msg/pull-history-msg")

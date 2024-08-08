@@ -2,8 +2,10 @@ package com.sparkfire.squirmulu.controller;
 
 import com.sparkfire.squirmulu.dao.AudioDao;
 import com.sparkfire.squirmulu.dao.ImgDao;
+import com.sparkfire.squirmulu.entity.AudioFile;
 import com.sparkfire.squirmulu.entity.CommonFile;
 import com.sparkfire.squirmulu.entity.request.DeleteFileReq;
+import com.sparkfire.squirmulu.entity.response.AudioFileSimple;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
 import com.sparkfire.squirmulu.service.AudioService;
 import com.sparkfire.squirmulu.service.ImgService;
@@ -211,7 +213,7 @@ public class FileUploadController {
     }
 
     @PostMapping("/audio/upload_audio")
-    public CommonResponse<List<String>> uploadAudio(@RequestParam(value="file0", required = false) MultipartFile file0
+    public CommonResponse<List<AudioFileSimple>> uploadAudio(@RequestParam(value="file0", required = false) MultipartFile file0
             , @RequestParam(value="file1", required = false) MultipartFile file1
             , @RequestParam(value="file2", required = false) MultipartFile file2
             , @RequestParam(value="file3", required = false) MultipartFile file3
@@ -220,37 +222,46 @@ public class FileUploadController {
             , @RequestParam(value="file6", required = false) MultipartFile file6
             , @RequestParam(value="file7", required = false) MultipartFile file7
             , @RequestParam(value="file8", required = false) MultipartFile file8
+            , @RequestParam(value="name0", required = false) String name0
+            , @RequestParam(value="name1", required = false) String name1
+            , @RequestParam(value="name2", required = false) String name2
+            , @RequestParam(value="name3", required = false) String name3
+            , @RequestParam(value="name4", required = false) String name4
+            , @RequestParam(value="name5", required = false) String name5
+            , @RequestParam(value="name6", required = false) String name6
+            , @RequestParam(value="name7", required = false) String name7
+            , @RequestParam(value="name8", required = false) String name8
             , @RequestParam("userID")
 
                                                             long userID,
-                                                    @RequestParam("type")
+                                                       @RequestParam("type")
                                                             int type) {
         // 检查文件是否为空
 
         // 指定保存文件的目录
         try {
             // 创建目录
-            List<String> fileNames = new ArrayList<>();
+            List<AudioFileSimple> fileNames = new ArrayList<>();
 
             // 生成随机文件名
-            String fileName0 = audioService.uploadAudio(file0, imgPath, userID, type, imgHttpPath);
-            if (!fileName0.equals("")) fileNames.add(fileName0);
-            String fileName1 = audioService.uploadAudio(file1, imgPath, userID, type, imgHttpPath);
-            if (!fileName1.equals("")) fileNames.add(fileName1);
-            String fileName2 = audioService.uploadAudio(file2, imgPath, userID, type, imgHttpPath);
-            if (!fileName2.equals("")) fileNames.add(fileName2);
-            String fileName3 = audioService.uploadAudio(file3, imgPath, userID, type, imgHttpPath);
-            if (!fileName3.equals("")) fileNames.add(fileName3);
-            String fileName4 = audioService.uploadAudio(file4, imgPath, userID, type, imgHttpPath);
-            if (!fileName4.equals("")) fileNames.add(fileName4);
-            String fileName5 = audioService.uploadAudio(file5, imgPath, userID, type, imgHttpPath);
-            if (!fileName5.equals("")) fileNames.add(fileName5);
-            String fileName6 = audioService.uploadAudio(file6, imgPath, userID, type, imgHttpPath);
-            if (!fileName6.equals("")) fileNames.add(fileName6);
-            String fileName7 = audioService.uploadAudio(file7, imgPath, userID, type, imgHttpPath);
-            if (!fileName7.equals("")) fileNames.add(fileName7);
-            String fileName8 = audioService.uploadAudio(file8, imgPath, userID, type, imgHttpPath);
-            if (!fileName8.equals("")) fileNames.add(fileName8);
+            AudioFileSimple fileName0 = audioService.uploadAudio(file0, name0, audioPath, userID, type, audioHttpPath);
+            if (fileName0.getFile() != null) fileNames.add(fileName0);
+            AudioFileSimple fileName1 = audioService.uploadAudio(file1, name1, audioPath, userID, type, audioHttpPath);
+            if (fileName1.getFile() != null) fileNames.add(fileName1);
+            AudioFileSimple fileName2 = audioService.uploadAudio(file2, name2, audioPath, userID, type, audioHttpPath);
+            if (fileName2.getFile() != null) fileNames.add(fileName2);
+            AudioFileSimple fileName3 = audioService.uploadAudio(file3, name3, audioPath, userID, type, audioHttpPath);
+            if (fileName3.getFile() != null) fileNames.add(fileName3);
+            AudioFileSimple fileName4 = audioService.uploadAudio(file4, name4, audioPath, userID, type, audioHttpPath);
+            if (fileName4.getFile() != null) fileNames.add(fileName4);
+            AudioFileSimple fileName5 = audioService.uploadAudio(file5, name5, audioPath, userID, type, audioHttpPath);
+            if (fileName5.getFile() != null) fileNames.add(fileName5);
+            AudioFileSimple fileName6 = audioService.uploadAudio(file6, name6, audioPath, userID, type, audioHttpPath);
+            if (fileName6.getFile() != null) fileNames.add(fileName6);
+            AudioFileSimple fileName7 = audioService.uploadAudio(file7, name7, audioPath, userID, type, audioHttpPath);
+            if (fileName7.getFile() != null) fileNames.add(fileName7);
+            AudioFileSimple fileName8 = audioService.uploadAudio(file8, name8, audioPath, userID, type, audioHttpPath);
+            if (fileName8.getFile() != null) fileNames.add(fileName8);
 
             return CommonResponse.success(fileNames);
         } catch (IOException e) {

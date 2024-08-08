@@ -100,7 +100,7 @@ public interface ChatDao {
     List<ChatSendToAll> findAll(@Param("tableName") String tableName);
 
     @Select("SELECT * from ${tableName} WHERE p_channel = #{p_channel} and chat_type = #{chat_type}" +
-            "and room_id = #{room_id} and c_content like '%${keyWord}%' or r_des like '%${keyWord}%'")
+            "and room_id = #{room_id} and c_content like '%${keyWord}%'")
     @Results({
             @Result(column = "id", property = "id"),
             @Result(column = "user_id", property = "user_id"),
