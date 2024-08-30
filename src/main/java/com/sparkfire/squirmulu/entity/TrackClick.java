@@ -1,15 +1,21 @@
 package com.sparkfire.squirmulu.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class TrackClick {
 
     private Long id;
+    @JsonProperty("track_type")
     private Integer trackType;
     private Integer event;
     private String url;
     private Long timestamp;
+    @JsonProperty("user_id")
     private Long userId;
     private String session;
+    @JsonProperty("element_id")
     private String elementId;
+    @JsonProperty("element_text")
     private String elementText;
     private String remark;
 
