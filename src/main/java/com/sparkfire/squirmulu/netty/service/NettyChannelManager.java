@@ -29,7 +29,7 @@ public class NettyChannelManager {
     /**
      * {@link Channel#attr(AttributeKey)} 属性中，表示 Channel 对应的用户
      */
-    private static final AttributeKey<String> CHANNEL_ATTR_KEY_USER = AttributeKey.newInstance("user");
+    public static final AttributeKey<String> CHANNEL_ATTR_KEY_USER = AttributeKey.newInstance("user");
 
     private static final AttributeKey<Long> CHANNEL_ATTR_KEY_USER_ID = AttributeKey.newInstance("userID");
     private static final AttributeKey<Long> CHANNEL_ATTR_KEY_ROOM = AttributeKey.newInstance("room");

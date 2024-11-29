@@ -15,7 +15,11 @@ import com.sparkfire.squirmulu.service.RoomService;
 import com.sparkfire.squirmulu.util.RedisClient;
 import com.sparkfire.squirmulu.util.SnowflakeGenerator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +33,7 @@ import java.util.Set;
 
 @Component
 public class ChatSendToAllHandler implements MessageHandler<ChatSendToAll> {
+    private static final Logger logger = LoggerFactory.getLogger(ChatSendToAllHandler.class);
     public static final int CHAT = 1;
     public static final int RECORD = 2;
 
@@ -82,10 +87,15 @@ public class ChatSendToAllHandler implements MessageHandler<ChatSendToAll> {
         Set<Channel> channels = nettyChannelManager.getRoomChannel(message.getRoom_id());
         for(Channel userChannel : channels){
             try {
-                System.out.println("chat_to_all"+userChannel.id());
-                userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new ChatSendToAllWithIDString(message.getId()+"", message.getP_channel(), message.getP_time(), message.getC_content()
+                ChannelFuture future = userChannel.writeAndFlush(new TextWebSocketFrame(objectMapper.writeValueAsString(new ChatSendToAllWithIDString(message.getId()+"", message.getP_channel(), message.getP_time(), message.getC_content()
                         ,message.getA_name(),message.getA_img(),message.getRoom_id() + "",message.getUser_id(),message.getC_type(),message.getChat_type()))));
+                future.addListener((ChannelFutureListener) future1 -> {
+                    if (!future1.isSuccess()) {
+                        logger.error("send msg to " + userChannel.attr(NettyChannelManager.CHANNEL_ATTR_KEY_USER).get() + "error, room:" + message.getRoom_id());
+                    }
+                });
             } catch (JsonProcessingException e) {
+                logger.error("send msg to "+userChannel.attr(NettyChannelManager.CHANNEL_ATTR_KEY_USER).get()+"error, room:"+message.getRoom_id());
                 throw new RuntimeException(e);
             }
         }

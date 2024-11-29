@@ -54,6 +54,16 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.googlecode.libphonenumber/libphonenumber
 	implementation group: 'com.googlecode.libphonenumber', name: 'libphonenumber', version: '8.13.32'
 
+	// SLF4J API
+	implementation 'org.slf4j:slf4j-api:1.7.32'
+
+	// Logback implementation for SLF4J
+	implementation 'ch.qos.logback:logback-classic:1.2.3'
+
+	// Spring Boot Starter Logging (If using Spring Boot)
+	implementation 'org.springframework.boot:spring-boot-starter-logging'
+
+
 
 //	dependencies {
 //		implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
