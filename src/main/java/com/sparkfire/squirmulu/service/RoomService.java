@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -341,17 +342,17 @@ public class RoomService {
         LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(info.getCreate_time()), ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
         String formatted = dateTime.format(formatter);
-        switch (req.getSearching_mode()){
+        switch (req.getSearching_mode()) {
             case 0:
-                return chatDao.searchByKeyWords("chat_"+formatted,req.getKeywords(),req.getP_channel(),req.getChat_type(), req.getRoom_id());
+                return chatDao.searchByKeyWords("chat_" + formatted, req.getKeywords(), req.getP_channel(), req.getChat_type(), req.getRoom_id());
             case 1:
-                return chatDao.findByPageWithPTimeDesc("chat_"+formatted, req.getRoom_id(), req.getChat_type()
-                        , req.getP_channel(), chatDao.findById("chat_"+formatted, Long.parseLong(req.getKeywords())).getP_time()
-                        , (req.getPage_cur()-1) * req.getPage_size(), req.getPage_size());
+                return chatDao.findByPageWithPTimeDesc("chat_" + formatted, req.getRoom_id(), req.getChat_type()
+                        , req.getP_channel(), chatDao.findById("chat_" + formatted, Long.parseLong(req.getKeywords())).getP_time()
+                        , (req.getPage_cur() - 1) * req.getPage_size(), req.getPage_size());
             case 2:
-                return chatDao.findByPageWithPTime("chat_"+formatted, req.getRoom_id(), req.getChat_type()
-                        , req.getP_channel(), chatDao.findById("chat_"+formatted, Long.parseLong(req.getKeywords())).getP_time()
-                        , (req.getPage_cur()-1) * req.getPage_size(), req.getPage_size());
+                return chatDao.findByPageWithPTime("chat_" + formatted, req.getRoom_id(), req.getChat_type()
+                        , req.getP_channel(), chatDao.findById("chat_" + formatted, Long.parseLong(req.getKeywords())).getP_time()
+                        , (req.getPage_cur() - 1) * req.getPage_size(), req.getPage_size());
             default:
                 throw new ServiceException("不支持的查询模式");
         }
@@ -360,7 +361,7 @@ public class RoomService {
     public List<ChatSendToAll> getChatList(ChatListReq req) {
         String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + req.getRoom_id();
 
-        if(req.getPage_size() == -1){
+        if (req.getPage_size() == -1) {
             return redisClient.zRevRange(key, 0, -1, ChatSendToAll.class).stream()
                     .sorted(Comparator.comparing(ChatSendToAll::getP_time).reversed()).collect(Collectors.toList());
         }
@@ -390,6 +391,27 @@ public class RoomService {
             }
         }
         return chats;
+    }
+
+
+    public List<ChatSendToAll> saveChatList(SaveChatListReq req) {
+
+        // 输出时间戳
+        List<RoomInfo> rooms = roomDao.getRooms(1730390400L);
+        for (RoomInfo room : rooms) {
+            String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + room.getId();
+
+            Set<ChatSendToAll> chats = redisClient.zRevRange(key, 0, -1, ChatSendToAll.class);
+            if(req.getTest() == 1){
+                return chats.stream().limit(1).collect(Collectors.toList());
+            }
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(room.getCreate_time()), ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+            String formatted = dateTime.format(formatter);
+            chats = chatDao.findByPage("chat_" + formatted, req.getRoom_id(), req.getChat_type(), (int) start, req.getPage_size());
+
+        }
+        return new ArrayList<>();
     }
 
     public ClearMsgRes clearMsg(ClearMsgReq req) {
