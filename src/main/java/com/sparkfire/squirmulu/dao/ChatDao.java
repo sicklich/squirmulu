@@ -10,6 +10,11 @@ public interface ChatDao {
     @Insert("INSERT INTO ${tableName} (id, user_id, room_id, c_content, p_time, chat_type, c_type, p_channel, a_img, a_name) VALUES (#{chat.id}, #{chat.user_id}, #{chat.room_id}, #{chat.c_content}, #{chat.p_time}, #{chat.chat_type}, #{chat.c_type}, #{chat.p_channel}, #{chat.a_img}, #{chat.a_name})")
     int insert(@Param("tableName") String tableName, @Param("chat") ChatSendToAll chat);
 
+    @Insert("INSERT INTO ${tableName} (id, user_id, room_id, c_content, p_time, chat_type, c_type" +
+            ", p_channel, a_img, a_name) VALUES (#{chat.id}, #{chat.user_id}, #{chat.room_id}, #{chat.c_content}" +
+            ", #{chat.p_time}, #{chat.chat_type}, #{chat.c_type}, #{chat.p_channel}, #{chat.a_img}, #{chat.a_name}) ON DUPLICATE KEY UPDATE id=#{chat.id}")
+    int insertNotExist(@Param("tableName") String tableName, @Param("chat") ChatSendToAll chat);
+
     @Delete("DELETE FROM ${tableName} WHERE id = #{id}")
     int delete(@Param("tableName") String tableName, @Param("id") long id);
 

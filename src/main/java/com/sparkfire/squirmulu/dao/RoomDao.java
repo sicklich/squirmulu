@@ -29,7 +29,7 @@ public interface RoomDao {
     })
     RoomInfo getByID(@Param("id") long id);
 
-    @Select("SELECT id,kp_id,body_info,create_time,edit_time,r_name,r_des,r_tags from room WHERE create_time >= #{time}")
+    @Select("SELECT id,kp_id,body_info,create_time,edit_time,r_name,r_des,r_tags from room WHERE create_time >= #{time} order by create_time")
     @Results({
             @Result(property = "body_info", column = "body_info", jdbcType = JdbcType.LONGVARCHAR),
             @Result(property = "id", column = "id"),

@@ -69,6 +69,11 @@ public class RoomController {
                         , chat.getA_name(), chat.getA_img(), chat.getRoom_id() + "", chat.getUser_id(), chat.getC_type(), chat.getChat_type())).collect(Collectors.toList()));
     }
 
+    @RequestMapping("/game-into/save-chat-list")
+    public CommonResponse save_chat_list(@RequestBody SaveChatListReq req) throws JsonProcessingException {
+        return CommonResponse.success(roomService.saveChatList(req));
+    }
+
     @RequestMapping("/game-into/search-record")
     public CommonResponse search_record(@RequestBody RecordSearchReq req){
         return CommonResponse.success(roomService.searchRecords(req).stream()

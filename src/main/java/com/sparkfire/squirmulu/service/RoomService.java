@@ -394,24 +394,32 @@ public class RoomService {
     }
 
 
-    public List<ChatSendToAll> saveChatList(SaveChatListReq req) {
+    public ChatSendToAll saveChatList(SaveChatListReq req) {
 
         // 输出时间戳
         List<RoomInfo> rooms = roomDao.getRooms(1730390400L);
         for (RoomInfo room : rooms) {
             String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + room.getId();
 
-            Set<ChatSendToAll> chats = redisClient.zRevRange(key, 0, -1, ChatSendToAll.class);
-            if(req.getTest() == 1){
-                return chats.stream().limit(1).collect(Collectors.toList());
+            List<ChatSendToAll> chats = new ArrayList<>(redisClient.zRevRange(key, 0, -1, ChatSendToAll.class));
+            if (req.getTest() == 1) {
+                return chats.get(0);
             }
             LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(room.getCreate_time()), ZoneId.systemDefault());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
             String formatted = dateTime.format(formatter);
-            chats = chatDao.findByPage("chat_" + formatted, req.getRoom_id(), req.getChat_type(), (int) start, req.getPage_size());
+            if (req.getTest() == 2) {
+                ChatSendToAll chat = chats.get(0);
+                chatDao.insertNotExist("chat_" + formatted, chat);
+                chatDao.insertNotExist("chat_" + formatted, chat);
+                return chat;
+            }
+            for (ChatSendToAll chat : chats) {
+                chatDao.insertNotExist("chat_" + formatted, chat);
+            }
 
         }
-        return new ArrayList<>();
+        return new ChatSendToAll();
     }
 
     public ClearMsgRes clearMsg(ClearMsgReq req) {
