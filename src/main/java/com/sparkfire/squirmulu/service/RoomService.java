@@ -402,6 +402,9 @@ public class RoomService {
             String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + room.getId();
 
             List<ChatSendToAll> chats = new ArrayList<>(redisClient.zRevRange(key, 0, -1, ChatSendToAll.class));
+            if (chats.isEmpty()) {
+                continue;
+            }
             if (req.getTest() == 1) {
                 return chats.get(0);
             }
