@@ -41,6 +41,7 @@ public class GlobalExceptionHandler
     public Result handleServiceException(ServiceException e, HttpServletRequest request)
     {
         log.error(e.getMessage(), e);
+        log.info("code:{}", e.getCode());
         Integer code = e.getCode();
         return Objects.nonNull(code) ? Result.fail(code, e.getMessage()) : Result.fail(e.getMessage());
     }

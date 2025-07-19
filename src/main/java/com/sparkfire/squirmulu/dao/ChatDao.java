@@ -15,6 +15,9 @@ public interface ChatDao {
             ", #{chat.p_time}, #{chat.chat_type}, #{chat.c_type}, #{chat.p_channel}, #{chat.a_img}, #{chat.a_name}) ON DUPLICATE KEY UPDATE id=#{chat.id}")
     int insertNotExist(@Param("tableName") String tableName, @Param("chat") ChatSendToAll chat);
 
+    @Select("SELECT count(1) FROM ${tableName} WHERE chat_type = #{type} AND room_id = #{room_id}")
+    int totalCount(@Param("tableName") String tableName, @Param("type") int type, @Param("room_id") long room_id);
+
     @Delete("DELETE FROM ${tableName} WHERE id = #{id}")
     int delete(@Param("tableName") String tableName, @Param("id") long id);
 

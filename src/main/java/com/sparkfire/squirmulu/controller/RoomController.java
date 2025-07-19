@@ -8,6 +8,7 @@ import com.sparkfire.squirmulu.entity.RoomCardUpdateReq;
 import com.sparkfire.squirmulu.entity.RoomInfo;
 import com.sparkfire.squirmulu.entity.request.*;
 import com.sparkfire.squirmulu.entity.response.CommonResponse;
+import com.sparkfire.squirmulu.exception.ServiceException;
 import com.sparkfire.squirmulu.netty.message.chat.ChatSendToAllWithIDString;
 import com.sparkfire.squirmulu.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sql.rowset.serial.SerialException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -99,6 +101,17 @@ public class RoomController {
     @RequestMapping("/game-list/pull-search")
     public CommonResponse pull_search(@RequestBody RoomSearchListReq req) {
         return CommonResponse.success(roomService.searchRoomList(req));
+    }
+
+    @RequestMapping("/aigc/ds-general")
+    public CommonResponse aigc(@RequestBody RoomRocordAIReq req) {
+        String res = "";
+        try{
+            res = roomService.aigc(req);
+        }catch (ServiceException e){
+            return CommonResponse.error(e.getCode(), e.getMessage());
+        }
+        return CommonResponse.success(res);
     }
 
 }

@@ -35,7 +35,7 @@ public class SysUserServiceImpl implements SysUserService {
     public Boolean insert(SysUser sysUser) {
         // 用户名或密码为空 错误
         if (!Validator.isEmail(sysUser.getEmail())) {
-            throw new ServiceException("邮箱输入错误");
+            throw new ServiceException("邮箱输入错误", -4);
         }
 
         SysUser user = sysUserMapper.getSysUserInfoByEmail(sysUser.getEmail());

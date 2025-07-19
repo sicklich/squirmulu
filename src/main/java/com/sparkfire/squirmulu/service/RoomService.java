@@ -32,6 +32,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -56,6 +57,9 @@ public class RoomService {
 
     @Autowired
     ChatDao chatDao;
+
+    @Autowired
+    DeepSeekService deepSeekService;
 
 //    @Autowired
 //    RoomSearchService roomSearchService;
@@ -397,32 +401,41 @@ public class RoomService {
     public ChatSendToAll saveChatList(SaveChatListReq req) {
 
         // 输出时间戳
-        List<RoomInfo> rooms = roomDao.getRooms(1730390400L);
+        List<RoomInfo> rooms = roomDao.getRooms(1711900799L);
+        List<String> roomIdsMissed = new ArrayList<>();
         for (RoomInfo room : rooms) {
             String key = (req.getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + room.getId();
 
             List<ChatSendToAll> chats = new ArrayList<>(redisClient.zRevRange(key, 0, -1, ChatSendToAll.class));
-            if (chats.isEmpty()) {
+            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(room.getCreate_time()), ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+            String formatted = dateTime.format(formatter);
+            if (chats.isEmpty() || (chatDao.totalCount("chat_" + formatted, req.getChat_type(), Long.parseLong(room.getId())) == chats.size())) {
                 continue;
             }
             if (req.getTest() == 1) {
                 return chats.get(0);
             }
-            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(room.getCreate_time()), ZoneId.systemDefault());
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-            String formatted = dateTime.format(formatter);
             if (req.getTest() == 2) {
                 ChatSendToAll chat = chats.get(0);
                 chatDao.insertNotExist("chat_" + formatted, chat);
-                chatDao.insertNotExist("chat_" + formatted, chat);
                 return chat;
             }
-            for (ChatSendToAll chat : chats) {
-                chatDao.insertNotExist("chat_" + formatted, chat);
-            }
+//            for (ChatSendToAll chat : chats) {
+//                chatDao.insertNotExist("chat_" + formatted, chat);
+//            }
+            roomIdsMissed.add(room.getId());
+            CompletableFuture.runAsync(() -> {
+                for (ChatSendToAll chat : chats) {
+                    chatDao.insertNotExist("chat_" + formatted, chat);
+                }
+            });
+
 
         }
-        return new ChatSendToAll();
+        ChatSendToAll chat = new ChatSendToAll();
+        chat.setC_content("fix room size is:" + roomIdsMissed.size());
+        return chat;
     }
 
     public ClearMsgRes clearMsg(ClearMsgReq req) {
@@ -642,6 +655,104 @@ public class RoomService {
             return find;
         } else {
             return find || node.get("kp_id").asLong() == id;
+        }
+    }
+
+    public String aigc(RoomRocordAIReq req) throws ServiceException{
+        String key = (req.getLog_obj().getChat_type() == ChatSendToAllHandler.CHAT ? RedisClient.room_chat_list : RedisClient.room_record_list) + req.getLog_obj().getRoom_id();
+        if(req.getLog_obj().getLog_anchors().getMode() != 0 && req.getLog_obj().getLog_anchors().getArray().size() != 2){
+            throw new ServiceException("参数错误");
+        }
+        int start = req.getLog_obj().getLog_anchors().getMode() == 0 ? 0 : req.getLog_obj().getLog_anchors().getArray().get(0);
+        int end = req.getLog_obj().getLog_anchors().getMode() == 0 ? -1 : req.getLog_obj().getLog_anchors().getArray().get(1);
+        List<ChatSendToAll> chats = new ArrayList<>(redisClient.zRange(key, start, end, ChatSendToAll.class));
+
+        String record = generateRoomStandardRecord(chats, req.getLog_obj().getRoom_id());
+
+        String res = deepSeekService.answer(String.format("我会向你提供（1）要求（2）文字风格（3）草稿内容\n" +
+                "请你根据'%s'，将'%s'按照'%s'进行处理", req.getPurpose(), record, req.getAi_paras().getPrompt()), req.getAi_paras().getTemperature());
+        // 创建 ObjectMapper 实例
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // 解析 JSON 字符串
+        JsonNode rootNode = null;
+        try {
+            rootNode = objectMapper.readTree(res);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 获取 choices 数组的第一个元素的 content
+        return rootNode.path("choices").get(0).path("message").path("content").asText();
+    }
+
+    /**
+     * generate standard output of room records for aigc
+     * @param chats
+     * @return
+     */
+    private String generateRoomStandardRecord(List<ChatSendToAll> chats, String roomID){
+        String output = "";
+        RoomInfo room = getRoomInfo(roomID);
+        for(ChatSendToAll chat : chats){
+            String cType = transformLogContentType(chat.getC_type());
+            String kpPrefix = room.getKp_id() == chat.getUser_id() ? "KP-" : "";
+            switch (chat.getC_type()){
+                case "dialog":
+                case "inHeart":
+                    output += String.format("%s| %s%s [%s]: %s\n", chat.getP_channel(), kpPrefix, chat.getA_name(), cType, chat.getC_content());
+                    break;
+                case "action":
+                case "voiceover":
+                    output += String.format("%s| [%s]: %s\n", chat.getP_channel(), cType, chat.getC_content());
+                    break;
+                case "rollDice":
+                case "hiddenDice":
+                    output += String.format("%s| %s [%s]: %s\n", chat.getP_channel(), chat.getA_name(), cType, chat.getC_content());
+                    break;
+                case "sceneChange":
+                    output += String.format("%s| [%s]: 【场景切换】\n", chat.getP_channel(), cType);
+                    break;
+            }
+//            if(chat.getP_channel() == 0){
+//                if(!Objects.equals(chat.getC_type(), "voiceover") && !Objects.equals(chat.getC_type(), "action")){
+//                    output += String.format("%s [%s]:\n%s\n\n", chat.getA_name(), cType, chat.getC_content());
+//                }else if(Objects.equals(chat.getC_type(), "voiceover")){
+//                    output += String.format("----------\n[%s]:\n%s\n----------", cType, chat.getC_content());
+//                }else if(Objects.equals(chat.getC_type(), "action")){
+//                    output += String.format("[%s]:\n%s\n\n;", cType, chat.getC_content());
+//                }
+//            }else{
+//                if(!Objects.equals(chat.getC_type(), "voiceover") && !Objects.equals(chat.getC_type(), "action")){
+//                    output += String.format("(频道%s [%s]:\n%s\n\n", chat.getP_channel(), chat.getA_name(), cType, chat.getC_content());
+//                }else if(Objects.equals(chat.getC_type(), "voiceover")){
+//                    output += String.format("----------\n[(频道%s) %s]:\n%s\n----------\n\n", chat.getP_channel(), cType, chat.getC_content());
+//                }else if(Objects.equals(chat.getC_type(), "action")){
+//                    output += String.format("(频道%s) [%s]:\n%s\n\n", chat.getP_channel(), cType, chat.getC_content());
+//                }
+//            }
+        }
+        return output;
+    }
+
+    private String transformLogContentType(String type){
+        switch (type){
+            case "dialog":
+                return "交流";
+            case "inHeart":
+                return "心声";
+            case "rollDice":
+                return "掷骰";
+            case "action":
+                return "行动";
+            case "voiceover":
+                return "旁白";
+            case "hiddenDice":
+                return "暗骰";
+            case "chat":
+                return "闲聊";
+            default:
+                return "其他";
         }
     }
 }
