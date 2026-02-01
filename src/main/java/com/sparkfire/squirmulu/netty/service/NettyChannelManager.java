@@ -119,17 +119,44 @@ public class NettyChannelManager {
     }
 
     /**
-     * 将 Channel 从 {@link #channels} 和 {@link #userChannels} 中移除
+     * 将 Channel 从 {@link #channels}、{@link #userChannels} 和 {@link #roomChannels} 中移除
      *
      * @param channel Channel
      */
     public void remove(Channel channel) {
         // 移除 channels
         channels.remove(channel.id());
-        // 移除 userChannels
+        
+        // 移除 userChannels 和 userChannelsTmp
         if (channel.hasAttr(CHANNEL_ATTR_KEY_USER)) {
-            userChannels.remove(channel.attr(CHANNEL_ATTR_KEY_USER).get());
+            String user = channel.attr(CHANNEL_ATTR_KEY_USER).get();
+            if (user != null) {
+                userChannels.remove(user);
+                userChannelsTmp.remove(user);
+            }
         }
+        
+        // 移除 roomChannels 中的 channel，并清理 userRooms
+        if (channel.hasAttr(CHANNEL_ATTR_KEY_ROOM) && channel.hasAttr(CHANNEL_ATTR_KEY_USER_ID)) {
+            Long roomId = channel.attr(CHANNEL_ATTR_KEY_ROOM).get();
+            Long userId = channel.attr(CHANNEL_ATTR_KEY_USER_ID).get();
+            
+            if (roomId != null) {
+                Set<Channel> channelSet = roomChannels.get(roomId);
+                if (channelSet != null) {
+                    channelSet.remove(channel);
+                    // 如果房间没有任何连接了，移除整个房间
+                    if (channelSet.isEmpty()) {
+                        roomChannels.remove(roomId);
+                    }
+                }
+            }
+            
+            if (userId != null) {
+                userRooms.remove(userId);
+            }
+        }
+        
         logger.info("[remove][一个连接({})离开]", channel.id());
     }
 
